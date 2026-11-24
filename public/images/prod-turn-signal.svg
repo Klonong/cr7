@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" fill="none">
+  <defs>
+    <radialGradient id="studio" cx="50%" cy="42%" r="58%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e4e4e7"/>
+    </radialGradient>
+    <linearGradient id="amberStrip" x1="150" y1="0" x2="450" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="50%" stop-color="#fef08a"/>
+      <stop offset="100%" stop-color="#ea580c"/>
+    </linearGradient>
+    <linearGradient id="casing" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3f3f46"/>
+      <stop offset="100%" stop-color="#09090b"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="600" fill="url(#studio)"/>
+  <ellipse cx="300" cy="488" rx="180" ry="20" fill="#09090b" opacity="0.12"/>
+
+  <!-- Top Turn Signal -->
+  <g transform="translate(0, -30)">
+    <rect x="112" y="216" width="52" height="22" rx="4" fill="#52525b"/>
+    <rect x="92" y="220" width="22" height="14" rx="2" fill="#a1a1aa"/>
+    <path d="M162 204 L438 190 C464 189 484 206 484 227 C484 248 464 265 438 264 L162 250 Z" fill="url(#casing)" stroke="#52525b" stroke-width="2.5"/>
+    <path d="M188 219 L444 211 C456 211 464 218 464 227 C464 236 456 243 444 243 L188 235 Z" fill="#18181b"/>
+    <!-- Sequential LED Bars -->
+    <g fill="url(#amberStrip)">
+      <polygon points="205,222 232,221 242,233 215,233"/>
+      <polygon points="246,221 273,220 283,233 256,233"/>
+      <polygon points="287,220 314,219 324,234 297,234"/>
+      <polygon points="328,219 355,218 365,235 338,235"/>
+      <polygon points="369,218 396,217 406,236 379,236"/>
+      <polygon points="410,217 444,217 452,236 420,236"/>
+    </g>
+  </g>
+
+  <!-- Bottom Turn Signal (Mirrored Pair) -->
+  <g transform="translate(0, 125)">
+    <rect x="436" y="216" width="52" height="22" rx="4" fill="#52525b"/>
+    <rect x="486" y="220" width="22" height="14" rx="2" fill="#a1a1aa"/>
+    <path d="M438 204 L162 190 C136 189 116 206 116 227 C116 248 136 265 162 264 L438 250 Z" fill="url(#casing)" stroke="#52525b" stroke-width="2.5"/>
+    <path d="M412 219 L156 211 C144 211 136 218 136 227 C136 236 144 243 156 243 L412 235 Z" fill="#18181b"/>
+    <!-- Sequential LED Bars -->
+    <g fill="url(#amberStrip)">
+      <polygon points="395,222 368,221 358,233 385,233"/>
+      <polygon points="354,221 327,220 317,233 344,233"/>
+      <polygon points="313,220 286,219 276,234 303,234"/>
+      <polygon points="272,219 245,218 235,235 262,235"/>
+      <polygon points="231,218 204,217 194,236 221,236"/>
+      <polygon points="190,217 156,217 148,236 180,236"/>
+    </g>
+  </g>
+</svg>

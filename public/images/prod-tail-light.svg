@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" fill="none">
+  <defs>
+    <radialGradient id="studio" cx="50%" cy="42%" r="58%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e4e4e7"/>
+    </radialGradient>
+    <linearGradient id="redGlow" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#ef4444"/>
+      <stop offset="50%" stop-color="#fecaca"/>
+      <stop offset="100%" stop-color="#dc2626"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="600" fill="url(#studio)"/>
+  <ellipse cx="300" cy="482" rx="185" ry="20" fill="#09090b" opacity="0.14"/>
+
+  <!-- Smoked Tail Light Housing -->
+  <path d="M128 210 C180 172, 420 172, 472 210 L446 378 C395 408, 205 408, 154 378 Z" fill="#18181b" stroke="#52525b" stroke-width="4"/>
+  <path d="M148 224 C194 192, 406 192, 452 224 L430 362 C386 388, 214 388, 170 362 Z" fill="#09090b"/>
+
+  <!-- Signature Twin Blade LED DRL Bars -->
+  <path d="M174 242 L268 258 L256 344 L190 330 Z" fill="none" stroke="url(#redGlow)" stroke-width="11" stroke-linejoin="round"/>
+  <path d="M426 242 L332 258 L344 344 L410 330 Z" fill="none" stroke="url(#redGlow)" stroke-width="11" stroke-linejoin="round"/>
+
+  <!-- Center Brake Matrix -->
+  <rect x="284" y="256" width="32" height="86" rx="8" fill="#dc2626"/>
+  <rect x="292" y="266" width="16" height="66" rx="4" fill="#fca5a5"/>
+
+  <!-- Integrated Sequential Amber Corners -->
+  <path d="M168 340 L215 352" stroke="#f59e0b" stroke-width="7" stroke-linecap="round"/>
+  <path d="M432 340 L385 352" stroke="#f59e0b" stroke-width="7" stroke-linecap="round"/>
+</svg>

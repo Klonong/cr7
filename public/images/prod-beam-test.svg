@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" fill="none">
+  <defs>
+    <linearGradient id="nightSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#09090b"/>
+      <stop offset="52%" stop-color="#18181b"/>
+      <stop offset="100%" stop-color="#09090b"/>
+    </linearGradient>
+    <radialGradient id="cutoffWhite" cx="50%" cy="55%" r="52%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
+      <stop offset="50%" stop-color="#bae6fd" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#09090b" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="cutoffAmber" cx="50%" cy="68%" r="48%">
+      <stop offset="0%" stop-color="#fef08a" stop-opacity="0.9"/>
+      <stop offset="55%" stop-color="#f59e0b" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#09090b" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="600" height="600" fill="url(#nightSky)"/>
+  <!-- Perspective Road Lines -->
+  <line x1="300" y1="295" x2="40" y2="600" stroke="#3f3f46" stroke-width="2"/>
+  <line x1="300" y1="295" x2="560" y2="600" stroke="#3f3f46" stroke-width="2"/>
+  <line x1="300" y1="305" x2="300" y2="600" stroke="#71717a" stroke-width="3" stroke-dasharray="18 16"/>
+
+  <!-- Sharp Flat Cutoff Beam Pattern -->
+  <rect x="40" y="295" width="520" height="230" fill="url(#cutoffWhite)"/>
+  <ellipse cx="300" cy="395" rx="250" ry="72" fill="url(#cutoffAmber)"/>
+
+  <!-- Laser Cutoff Line -->
+  <line x1="45" y1="295" x2="555" y2="295" stroke="#38bdf8" stroke-width="3" opacity="0.9"/>
+  <line x1="45" y1="298" x2="555" y2="298" stroke="#ffffff" stroke-width="2"/>
+
+  <!-- Telemetry Labels -->
+  <g font-family="monospace" font-size="13" fill="#a1a1aa">
+    <text x="36" y="64" fill="#fafafa" font-weight="bold">NIGHT BEAM CUTOFF TEST</text>
+    <text x="36" y="86">LOW BEAM: 6000K CRISP WHITE · ZERO GLARE</text>
+    <text x="36" y="106" fill="#fbbf24">HIGH / FOG: 3000K GOLDEN AMBER PENETRATION</text>
+    <text x="36" y="564" fill="#71717a">MEASURED AT 15M DISTANCE · 12.8V DC</text>
+  </g>
+</svg>

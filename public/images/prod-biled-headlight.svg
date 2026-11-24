@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" fill="none">
+  <defs>
+    <radialGradient id="studio" cx="50%" cy="42%" r="58%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e4e4e7"/>
+    </radialGradient>
+    <radialGradient id="demonEye" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="40%" stop-color="#60a5fa"/>
+      <stop offset="72%" stop-color="#1d4ed8"/>
+      <stop offset="100%" stop-color="#09090b"/>
+    </radialGradient>
+  </defs>
+  <rect width="600" height="600" fill="url(#studio)"/>
+  <ellipse cx="300" cy="494" rx="165" ry="20" fill="#09090b" opacity="0.14"/>
+
+  <!-- Round Bi-LED 2.5" Shroud Housing -->
+  <circle cx="300" cy="285" r="176" fill="#18181b" stroke="#52525b" stroke-width="4"/>
+  <!-- Outer Angel Eye Halo -->
+  <circle cx="300" cy="285" r="154" fill="none" stroke="#e0f2fe" stroke-width="10"/>
+  <circle cx="300" cy="285" r="154" fill="none" stroke="#38bdf8" stroke-width="4" opacity="0.8"/>
+
+  <!-- Inner Stepped Shroud -->
+  <circle cx="300" cy="285" r="130" fill="#09090b" stroke="#3f3f46" stroke-width="3"/>
+  <!-- Devil Eye Accent Ring -->
+  <circle cx="300" cy="285" r="102" fill="none" stroke="#dc2626" stroke-width="5"/>
+
+  <!-- Convex Glass Optical Lens -->
+  <circle cx="300" cy="285" r="92" fill="url(#demonEye)"/>
+  <ellipse cx="272" cy="252" rx="28" ry="18" transform="rotate(-30 272 252)" fill="#ffffff" opacity="0.65"/>
+
+  <!-- Mounting Screws -->
+  <circle cx="300" cy="120" r="6" fill="#71717a"/>
+  <circle cx="300" cy="450" r="6" fill="#71717a"/>
+  <circle cx="135" cy="285" r="6" fill="#71717a"/>
+  <circle cx="465" cy="285" r="6" fill="#71717a"/>
+</svg>

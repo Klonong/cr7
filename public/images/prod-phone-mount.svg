@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" fill="none">
+  <defs>
+    <radialGradient id="studio" cx="50%" cy="42%" r="58%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e4e4e7"/>
+    </radialGradient>
+    <linearGradient id="mountBody" x1="160" y1="100" x2="440" y2="480" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#3f3f46"/>
+      <stop offset="50%" stop-color="#18181b"/>
+      <stop offset="100%" stop-color="#09090b"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="600" fill="url(#studio)"/>
+  <ellipse cx="300" cy="512" rx="150" ry="18" fill="#09090b" opacity="0.14"/>
+
+  <!-- Handlebar Clamp Stem -->
+  <rect x="278" y="390" width="44" height="68" rx="8" fill="#27272a" stroke="#52525b" stroke-width="2"/>
+  <circle cx="300" cy="472" r="34" fill="#18181b" stroke="#52525b" stroke-width="3"/>
+  <circle cx="300" cy="472" r="18" fill="#e4e4e7"/>
+  <rect x="332" y="464" width="22" height="16" rx="4" fill="#dc2626"/>
+
+  <!-- 4-Corner CNC Locking Claws -->
+  <path d="M188 122 L236 122 L236 146 L212 146 L212 178 L188 178 Z" fill="#18181b" stroke="#52525b" stroke-width="2"/>
+  <path d="M412 122 L364 122 L364 146 L388 146 L388 178 L412 178 Z" fill="#18181b" stroke="#52525b" stroke-width="2"/>
+  <path d="M188 408 L236 408 L236 384 L212 384 L212 352 L188 352 Z" fill="#18181b" stroke="#52525b" stroke-width="2"/>
+  <path d="M412 408 L364 408 L364 384 L388 384 L388 352 L412 352 Z" fill="#18181b" stroke="#52525b" stroke-width="2"/>
+
+  <!-- Central Cradle Frame -->
+  <rect x="206" y="140" width="188" height="250" rx="22" fill="url(#mountBody)" stroke="#52525b" stroke-width="3"/>
+
+  <!-- Anti-Vibration Silicone Dampener Module -->
+  <rect x="228" y="168" width="144" height="170" rx="14" fill="#09090b" stroke="#3f3f46" stroke-width="2"/>
+  <circle cx="256" cy="196" r="14" fill="#dc2626"/>
+  <circle cx="256" cy="196" r="6" fill="#18181b"/>
+  <circle cx="344" cy="196" r="14" fill="#dc2626"/>
+  <circle cx="344" cy="196" r="6" fill="#18181b"/>
+  <circle cx="256" cy="310" r="14" fill="#dc2626"/>
+  <circle cx="256" cy="310" r="6" fill="#18181b"/>
+  <circle cx="344" cy="310" r="14" fill="#dc2626"/>
+  <circle cx="344" cy="310" r="6" fill="#18181b"/>
+
+  <!-- Center Lock Emblem -->
+  <circle cx="300" cy="253" r="28" fill="#18181b" stroke="#71717a" stroke-width="2.5"/>
+  <circle cx="300" cy="253" r="14" fill="#27272a" stroke="#dc2626" stroke-width="2"/>
+
+  <!-- USB-C Fast Charge Port -->
+  <rect x="266" y="354" width="68" height="20" rx="6" fill="#27272a" stroke="#52525b" stroke-width="1.5"/>
+  <rect x="284" y="361" width="32" height="6" rx="3" fill="#3b82f6"/>
+</svg>
