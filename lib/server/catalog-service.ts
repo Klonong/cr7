@@ -25,9 +25,10 @@ export async function getLiveCatalogProducts(): Promise<Product[]> {
 }
 
 export function revalidateCatalog(slug?: string): void {
-  revalidateTag(CATALOG_CACHE_TAG, "max");
+  revalidateTag(CATALOG_CACHE_TAG, { expire: 0 });
   revalidatePath("/");
   revalidatePath("/products");
+  revalidatePath("/sitemap.xml");
   if (slug) {
     revalidatePath(`/products/${slug}`);
   }

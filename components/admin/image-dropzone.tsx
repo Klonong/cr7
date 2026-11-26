@@ -111,7 +111,7 @@ export function ImageDropzone({
           </p>
           <p className="text-[11px] text-muted-foreground">
             Seret &amp; lepas file (Drag &amp; Drop) atau klik untuk memilih
-            file · JPG, PNG, WebP (Maks. 5 MB)
+            file · JPG, PNG, WebP (otomatis dikonversi ke .webp · Maks. 5 MB)
           </p>
           {value && (
             <p className="truncate font-mono text-[10px] text-muted-foreground">

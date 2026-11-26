@@ -26,9 +26,9 @@ import {
   ShopeeIcon,
   TikTokShopIcon,
 } from "@/components/icons/marketplace-icons";
-import { ImageDropzone } from "@/components/admin/image-dropzone";
+import { ProductImagesEditor } from "@/components/admin/product-images-editor";
 import {
-  DEFAULT_PRODUCT_IMAGE,
+  BEAM_TEST_IMAGE,
   PRODUCT_BADGES,
   PRODUCT_IMAGE_PRESETS,
 } from "@/config/store";
@@ -431,33 +431,34 @@ function ProductFormInner({
 
         <Separator />
 
-        {/* Section 4: Upload Gambar Drag & Drop */}
-        <div className="space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Foto Produk (Drag &amp; Drop)
-          </p>
-          <ImageDropzone
-            value={form.imageUrl}
-            onChange={form.setImageUrl}
-            presets={PRODUCT_IMAGE_PRESETS}
-            label="Seret foto produk ke sini atau klik untuk unggah"
-            fallbackSrc={DEFAULT_PRODUCT_IMAGE}
-          />
-
-          <div className="flex items-center justify-between rounded-md border border-border/70 px-3 py-2">
-            <Label htmlFor="pf-beam" className="text-xs text-muted-foreground">
-              Sertakan gambar Tes Pola Cahaya sebagai foto kedua saat di-hover
-            </Label>
-            <Switch
-              id="pf-beam"
-              size="sm"
-              checked={form.includeBeamImage}
-              onCheckedChange={(checked) =>
-                form.setIncludeBeamImage(Boolean(checked))
-              }
-            />
-          </div>
-        </div>
+        {/* Section 4: Multi-Foto Produk (Cloudflare R2 Bucket) */}
+        <ProductImagesEditor
+          images={form.images}
+          inputRef={form.imageInputRef}
+          manualImageUrl={form.manualImageUrl}
+          onManualImageUrlChange={form.setManualImageUrl}
+          dragging={form.draggingImages}
+          uploading={form.uploadingImages}
+          uploadProgress={form.uploadProgress}
+          uploadError={form.uploadError}
+          lastUploadStorage={form.lastUploadStorage}
+          presets={[
+            ...PRODUCT_IMAGE_PRESETS,
+            { label: "Tes Pola Cahaya", url: BEAM_TEST_IMAGE },
+          ]}
+          onOpenPicker={form.openImagePicker}
+          onKeyDown={form.handleImagesKeyDown}
+          onDragOver={form.handleImagesDragOver}
+          onDragLeave={form.handleImagesDragLeave}
+          onDrop={form.handleImagesDrop}
+          onInputChange={form.handleImagesInputChange}
+          onAddManualUrl={form.handleAddManualImage}
+          onAddPreset={form.handleAddPresetOrUrlImage}
+          onRemove={form.handleRemoveImage}
+          onSetPrimary={form.handleSetPrimaryImage}
+          onMove={form.handleMoveImage}
+          onUpdateMeta={form.handleUpdateImageMeta}
+        />
 
         <Separator />
 
@@ -589,12 +590,21 @@ function ProductFormInner({
           type="button"
           variant="outline"
           onClick={onClose}
-          disabled={form.submitting}
+          disabled={form.submitting || form.uploadingImages}
         >
           Batal
         </Button>
-        <Button type="submit" disabled={form.submitting} className="gap-1.5">
-          {form.submitting ? (
+        <Button
+          type="submit"
+          disabled={form.submitting || form.uploadingImages}
+          className="gap-1.5"
+        >
+          {form.uploadingImages ? (
+            <>
+              <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+              <span>Mengunggah Foto...</span>
+            </>
+          ) : form.submitting ? (
             <>
               <Loader2 className="size-4 animate-spin" aria-hidden="true" />
               <span>Menyimpan...</span>

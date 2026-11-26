@@ -16,7 +16,7 @@ export async function getLiveCatalogMotorcycles(): Promise<Motorcycle[]> {
 }
 
 export function revalidateMotorcycles(): void {
-  revalidateTag(MOTORCYCLES_CACHE_TAG, "max");
+  revalidateTag(MOTORCYCLES_CACHE_TAG, { expire: 0 });
   revalidatePath("/");
   revalidatePath("/products");
 }

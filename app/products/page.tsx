@@ -14,11 +14,33 @@ import { CatalogGridSkeleton } from "@/components/catalog/product-skeleton";
 import { getCatalogProducts } from "@/lib/server/catalog-service";
 import { getCatalogCategories } from "@/lib/server/category-service";
 import { getCatalogMotorcycles } from "@/lib/server/motorcycle-service";
+import { JsonLd } from "@/components/shared/json-ld";
+import {
+  buildBreadcrumbJsonLd,
+  buildCatalogCollectionJsonLd,
+  toAbsoluteUrl,
+} from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "Katalog Lengkap Aksesoris Motor",
+  title: "Katalog Lengkap Aksesoris & Sparepart Motor",
   description:
-    "Jelajahi katalog lengkap CR7 Racing: lampu depan LED, Bi-LED projector, handle rem CNC, frame slider, holder HP, dan relay set. Beli langsung di Shopee atau TikTok Shop.",
+    "Jelajahi katalog lengkap CR7 Racing: lampu depan LED, Bi-LED projector, SQL laser, handle rem CNC, frame slider, holder HP, dan relay set. Filter sesuai tipe motor Anda.",
+  alternates: {
+    canonical: "/products",
+  },
+  openGraph: {
+    type: "website",
+    url: toAbsoluteUrl("/products"),
+    title: "Katalog Lengkap Aksesoris & Sparepart Motor | CR7 Racing",
+    description:
+      "Filter lampu LED motor, Bi-LED projector, dan aksesoris CNC CR7 Racing berdasarkan kategori & tipe motor.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Katalog Lengkap Aksesoris & Sparepart Motor | CR7 Racing",
+    description:
+      "Filter lampu LED motor, Bi-LED projector, dan aksesoris CNC CR7 Racing berdasarkan kategori & tipe motor.",
+  },
 };
 
 export default async function ProductsCatalogPage() {
@@ -28,8 +50,15 @@ export default async function ProductsCatalogPage() {
     getCatalogMotorcycles(),
   ]);
 
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd([
+    { name: "Beranda", path: "/" },
+    { name: "Katalog", path: "/products" },
+  ]);
+  const collectionJsonLd = buildCatalogCollectionJsonLd(products);
+
   return (
     <div className="mx-auto w-full max-w-[1320px] px-4 py-8 sm:px-6 lg:px-8">
+      <JsonLd data={[breadcrumbJsonLd, collectionJsonLd]} />
       {/* Breadcrumb */}
       <Breadcrumb className="mb-5">
         <BreadcrumbList>

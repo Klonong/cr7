@@ -33,7 +33,7 @@ export function Navbar() {
     <header className="sticky top-0 z-40 w-full border-b border-white/15 bg-[#000000] text-[#fefefe] shadow-sm">
       <div className="mx-auto flex min-h-20 max-w-[1320px] items-center justify-between gap-4 px-4 py-3 sm:px-6 sm:py-3.5 lg:px-8">
         {/* Brand Logo */}
-        <BrandLogo href="/" subtitle="Aksesori & Lampu Motor" onDark />
+        <BrandLogo href="/" onDark />
 
         {/* Center Desktop Navigation */}
         <nav

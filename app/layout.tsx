@@ -4,6 +4,13 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { StorefrontShell } from "@/components/layout/storefront-shell";
+import { JsonLd } from "@/components/shared/json-ld";
+import { STORE_CONFIG } from "@/config/store";
+import {
+  buildOrganizationJsonLd,
+  buildWebSiteJsonLd,
+  SITE_URL,
+} from "@/lib/seo";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -16,13 +23,64 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const googleVerification = process.env.GOOGLE_SITE_VERIFICATION?.trim();
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "CR7 Racing — Katalog Resmi Aksesori & Lampu Motor",
+    default: "CR7 Racing — Katalog Resmi Lampu LED Motor & Part CNC",
     template: "%s | CR7 Racing",
   },
   description:
-    "Katalog digital resmi CR7 Racing untuk lampu LED motor, Bi-LED projector, SQL laser, handle CNC, pelindung bodi, dan perlengkapan touring. Order langsung via Shopee dan TikTok Shop.",
+    "Katalog digital resmi CR7 Racing untuk lampu LED motor, Bi-LED projector, SQL laser, handle rem CNC, frame slider, dan aksesoris touring. Order aman via Shopee dan TikTok Shop.",
+  applicationName: STORE_CONFIG.brandName,
+  authors: [{ name: STORE_CONFIG.brandName, url: SITE_URL }],
+  creator: STORE_CONFIG.brandName,
+  publisher: STORE_CONFIG.brandName,
+  keywords: [
+    "CR7 Racing",
+    "lampu LED motor",
+    "Bi-LED projector motor",
+    "lampu tembak SQL 3 mata",
+    "aksesoris motor CNC",
+    "handle rem CNC",
+    "frame slider motor",
+    "holder HP motor anti getar",
+    "relay set lampu tembak",
+    "sparepart motor NMAX PCX Vario Aerox",
+  ],
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    locale: "id_ID",
+    url: SITE_URL,
+    siteName: STORE_CONFIG.brandName,
+    title: "CR7 Racing — Katalog Resmi Lampu LED Motor & Part CNC",
+    description:
+      "Cek spesifikasi lengkap lampu Bi-LED, SQL laser, dan part CNC CR7 Racing. Order langsung di toko resmi Shopee & TikTok Shop.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "CR7 Racing — Katalog Resmi Lampu LED Motor & Part CNC",
+    description:
+      "Katalog resmi lampu LED motor Bi-LED projector, SQL laser, dan part CNC CR7 Racing Indonesia.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+  ...(googleVerification
+    ? { verification: { google: googleVerification } }
+    : {}),
 };
 
 const themeInitScript = `
@@ -44,6 +102,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <JsonLd data={[buildOrganizationJsonLd(), buildWebSiteJsonLd()]} />
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <a

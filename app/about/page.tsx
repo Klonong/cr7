@@ -25,13 +25,35 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { YoutubeShowcase } from "@/components/about/youtube-showcase";
 import { OfficialStoreLinks } from "@/components/shared/official-store-links";
+import { JsonLd } from "@/components/shared/json-ld";
 import { STORE_CONFIG } from "@/config/store";
+import {
+  buildAboutPageJsonLd,
+  buildBreadcrumbJsonLd,
+  toAbsoluteUrl,
+} from "@/lib/seo";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "Tentang Kami",
+  title: "Tentang Kami — Profil, Standar IP67 & Review Video",
   description:
-    "Mengenal CR7 Racing — penyedia aksesoris motor, lampu LED Bi-LED & SQL projector, serta part CNC presisi dengan toko resmi Shopee, TikTok Shop, dan channel YouTube.",
+    "Mengenal CR7 Racing — profil merek, standar ketahanan air IP67, garansi resmi, channel YouTube uji sorot lampu LED, serta tautan toko resmi Shopee dan TikTok Shop.",
+  alternates: {
+    canonical: "/about",
+  },
+  openGraph: {
+    type: "website",
+    url: toAbsoluteUrl("/about"),
+    title: "Tentang CR7 Racing — Profil, Standar IP67 & Review Video",
+    description:
+      "Profil resmi CR7 Racing, pengujian sorot cutoff malam di YouTube, serta layanan konsultasi teknisi via WhatsApp.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Tentang CR7 Racing — Profil, Standar IP67 & Review Video",
+    description:
+      "Profil resmi CR7 Racing, pengujian sorot cutoff malam di YouTube, serta layanan konsultasi teknisi via WhatsApp.",
+  },
 };
 
 const BRAND_VALUES = [
@@ -62,8 +84,15 @@ const BRAND_VALUES = [
 ];
 
 export default function AboutPage() {
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd([
+    { name: "Beranda", path: "/" },
+    { name: "Tentang Kami", path: "/about" },
+  ]);
+  const aboutAndVideoJsonLd = buildAboutPageJsonLd();
+
   return (
     <div className="mx-auto w-full max-w-[1320px] px-4 py-8 sm:px-6 lg:px-8 space-y-14">
+      <JsonLd data={[breadcrumbJsonLd, ...aboutAndVideoJsonLd]} />
       {/* Breadcrumb */}
       <Breadcrumb>
         <BreadcrumbList>

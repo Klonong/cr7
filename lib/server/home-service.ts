@@ -16,6 +16,6 @@ export async function getLiveHomeContent(): Promise<HomeContent> {
 }
 
 export function revalidateHomeContent(): void {
-  revalidateTag(HOME_CONTENT_CACHE_TAG, "max");
+  revalidateTag(HOME_CONTENT_CACHE_TAG, { expire: 0 });
   revalidatePath("/");
 }

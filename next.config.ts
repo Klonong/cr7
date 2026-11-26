@@ -2,6 +2,26 @@ import type { NextConfig } from "next";
 
 const isDev = process.env.NODE_ENV !== "production";
 
+function resolveR2Hostname(): string | null {
+  const raw = (
+    process.env.NEXT_PUBLIC_R2_PUBLIC_URL ||
+    process.env.R2_PUBLIC_URL ||
+    ""
+  ).trim();
+  if (!raw) return null;
+  try {
+    const parsed = new URL(raw);
+    return parsed.protocol === "https:" ? parsed.hostname : null;
+  } catch {
+    return null;
+  }
+}
+
+const r2Hostname = resolveR2Hostname();
+const imgSrcDirective = r2Hostname
+  ? `img-src 'self' data: blob: https://${r2Hostname}`
+  : "img-src 'self' data: blob:";
+
 const securityHeaders = [
   { key: "X-Frame-Options", value: "DENY" },
   { key: "X-Content-Type-Options", value: "nosniff" },
@@ -22,7 +42,7 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "img-src 'self' data: blob:",
+      imgSrcDirective,
       "font-src 'self' data:",
       "style-src 'self' 'unsafe-inline'",
       isDev
@@ -41,6 +61,19 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   cacheComponents: true,
   partialPrefetching: true,
+  images: {
+    remotePatterns: [
+      ...(r2Hostname
+        ? [
+            {
+              protocol: "https" as const,
+              hostname: r2Hostname,
+              pathname: "/**",
+            },
+          ]
+        : []),
+    ],
+  },
   turbopack: {
     rules: {
       "*.css": {
@@ -63,6 +96,18 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: "default-src 'none'; sandbox",
           },
+        ],
+      },
+      {
+        source: "/admin/:path*",
+        headers: [
+          { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" },
+        ],
+      },
+      {
+        source: "/api/:path*",
+        headers: [
+          { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" },
         ],
       },
     ];

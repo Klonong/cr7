@@ -76,7 +76,8 @@ export function validateHighlightInput(
   if (!isSafeImageSrc(resolvedImage)) {
     return {
       ok: false,
-      error: "Path gambar sorotan harus dari folder lokal /images/... atau /uploads/...",
+      error:
+        "Path gambar sorotan harus dari /images/..., /uploads/..., atau bucket Cloudflare R2 resmi.",
     };
   }
 
@@ -171,7 +172,8 @@ export function validateHomeSettingsInput(
   if (!isSafeImageSrc(heroImageUrl)) {
     return {
       ok: false,
-      error: "Path gambar hero harus dari folder lokal /images/... atau /uploads/...",
+      error:
+        "Path gambar hero harus dari /images/..., /uploads/..., atau bucket Cloudflare R2 resmi.",
     };
   }
 

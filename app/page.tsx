@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -25,7 +26,26 @@ import { getCatalogCategories } from "@/lib/server/category-service";
 import { getCatalogMotorcycles } from "@/lib/server/motorcycle-service";
 import { getHomeContent } from "@/lib/server/home-service";
 import { cn } from "@/lib/utils";
+import { toAbsoluteUrl } from "@/lib/seo";
 import type { TrustIconName } from "@/interface/home";
+
+export const metadata: Metadata = {
+  title: {
+    absolute: "CR7 Racing — Katalog Resmi Lampu LED Motor & Part CNC",
+  },
+  description:
+    "Katalog resmi CR7 Racing Indonesia: lampu Bi-LED projector, SQL 3 mata laser, sein running smoke, handle rem CNC 6 klik, frame slider Delrin, dan relay set 40A IP67.",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    url: toAbsoluteUrl("/"),
+    title: "CR7 Racing — Katalog Resmi Lampu LED Motor & Part CNC",
+    description:
+      "Cek spesifikasi lengkap, uji sorot cutoff malam, dan kecocokan motor. Order langsung via Shopee & TikTok Shop resmi CR7 Racing.",
+  },
+};
 
 const TRUST_ICON_MAP: Record<TrustIconName, LucideIcon> = {
   shield: ShieldCheck,

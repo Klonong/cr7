@@ -1,4 +1,9 @@
-import type { Category, CategorySlug, Product } from "./catalog";
+import type {
+  Category,
+  CategorySlug,
+  Product,
+  ProductImage,
+} from "./catalog";
 
 export type Theme = "light" | "dark";
 
@@ -11,6 +16,13 @@ export interface ThemeContextValue {
 export interface AdminFeedback {
   type: "success" | "error";
   message: string;
+}
+
+export interface ProductImageDraft {
+  id: string;
+  url: string;
+  alt: string;
+  label: NonNullable<ProductImage["label"]>;
 }
 
 export interface VariantDraft {

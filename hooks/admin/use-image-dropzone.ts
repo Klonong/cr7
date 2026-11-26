@@ -25,7 +25,7 @@ export function useImageDropzone({
       setError(null);
       setUploading(true);
       try {
-        const uploadedUrl = await uploadAdminImage(file);
+        const uploadedUrl = await uploadAdminImage(file, "home");
         onChange(uploadedUrl);
       } catch (err) {
         setError(getErrorMessage(err, "Gagal mengunggah gambar."));

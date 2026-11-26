@@ -1,11 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { BEAM_TEST_IMAGE, DEFAULT_PRODUCT_IMAGE } from "@/config/store";
+import { DEFAULT_PRODUCT_IMAGE } from "@/config/store";
 import {
   createCatalogProduct,
   updateCatalogProduct,
 } from "@/lib/api/catalog-api";
+import { uploadAdminImageWithMeta } from "@/lib/api/upload-api";
 import { getErrorMessage } from "@/lib/api/client";
 import {
   parseCsvList,
@@ -20,13 +21,19 @@ import type {
   CategorySlug,
   Product,
   ProductBadge,
+  ProductImage,
   ProductInput,
   ProductVariant,
 } from "@/interface/catalog";
+import type { ProductImageDraft, VariantDraft } from "@/interface/hooks";
 
-import type { VariantDraft } from "@/interface/hooks";
+export type { ProductImageDraft, VariantDraft };
 
-export type { VariantDraft };
+export const MAX_PRODUCT_IMAGES = 10;
+
+export const IMAGE_LABEL_OPTIONS: readonly NonNullable<
+  ProductImage["label"]
+>[] = ["Utama", "Detail", "Pola Cahaya", "Kelengkapan"] as const;
 
 function toVariantDrafts(variants?: ProductVariant[]): VariantDraft[] {
   if (!variants || variants.length === 0) return [];
@@ -39,6 +46,18 @@ function toVariantDrafts(variants?: ProductVariant[]): VariantDraft[] {
     inStock: v.inStock,
     shopeeUrl: v.shopeeUrl ?? "",
     tiktokShopUrl: v.tiktokShopUrl ?? "",
+  }));
+}
+
+function toImageDrafts(images?: ProductImage[]): ProductImageDraft[] {
+  if (!images || images.length === 0) {
+    return [];
+  }
+  return images.slice(0, MAX_PRODUCT_IMAGES).map((img, idx) => ({
+    id: `img-${idx}-${img.url}`,
+    url: img.url,
+    alt: img.alt ?? "",
+    label: img.label ?? (idx === 0 ? "Utama" : "Detail"),
   }));
 }
 
@@ -56,6 +75,7 @@ export function useProductForm({
   onSaved,
 }: UseProductFormOptions) {
   const isEdit = Boolean(product);
+  const imageInputRef = React.useRef<HTMLInputElement>(null);
 
   const [name, setName] = React.useState(product?.name ?? "");
   const [sku, setSku] = React.useState(product?.sku ?? "");
@@ -78,12 +98,20 @@ export function useProductForm({
     product?.links.tiktokShop ?? ""
   );
 
-  const [imageUrl, setImageUrl] = React.useState(
-    product?.images[0]?.url ?? DEFAULT_PRODUCT_IMAGE
+  // Multi-image state (up to 10 images per product, saved to Cloudflare R2 bucket on upload)
+  const [images, setImages] = React.useState<ProductImageDraft[]>(() =>
+    toImageDrafts(product?.images)
   );
-  const [includeBeamImage, setIncludeBeamImage] = React.useState(
-    Boolean(product?.images.some((i) => i.url === BEAM_TEST_IMAGE))
+  const [manualImageUrl, setManualImageUrl] = React.useState("");
+  const [draggingImages, setDraggingImages] = React.useState(false);
+  const [uploadingImages, setUploadingImages] = React.useState(false);
+  const [uploadProgress, setUploadProgress] = React.useState<string | null>(
+    null
   );
+  const [uploadError, setUploadError] = React.useState<string | null>(null);
+  const [lastUploadStorage, setLastUploadStorage] = React.useState<
+    "r2" | "local" | null
+  >(null);
 
   const [variants, setVariants] = React.useState<VariantDraft[]>(() =>
     toVariantDrafts(product?.variants)
@@ -141,6 +169,221 @@ export function useProductForm({
     );
   }, []);
 
+  // Multi-image upload directly to /api/admin/upload (Cloudflare R2 bucket)
+  const handleUploadImageFiles = React.useCallback(
+    async (fileList: FileList | File[]) => {
+      const files = Array.from(fileList);
+      if (files.length === 0) return;
+
+      const remainingSlots = MAX_PRODUCT_IMAGES - images.length;
+      if (remainingSlots <= 0) {
+        setUploadError(
+          `Maksimal ${MAX_PRODUCT_IMAGES} foto per produk. Hapus salah satu foto terlebih dahulu.`
+        );
+        return;
+      }
+
+      const toUpload = files.slice(0, remainingSlots);
+      setUploadError(null);
+      setUploadingImages(true);
+
+      const uploadedDrafts: ProductImageDraft[] = [];
+      const errors: string[] = [];
+
+      for (let i = 0; i < toUpload.length; i++) {
+        const file = toUpload[i];
+        setUploadProgress(
+          `Mengunggah foto ${i + 1} dari ${toUpload.length}...`
+        );
+        try {
+          const result = await uploadAdminImageWithMeta(file, "products");
+          if (result.storage) {
+            setLastUploadStorage(result.storage);
+          }
+          const isFirstOverall =
+            images.length === 0 && uploadedDrafts.length === 0;
+          uploadedDrafts.push({
+            id: `img-${Date.now().toString(36)}-${i}-${Math.random().toString(36).slice(2, 6)}`,
+            url: result.url,
+            alt: name.trim() || file.name.replace(/\.[^.]+$/, ""),
+            label: isFirstOverall ? "Utama" : "Detail",
+          });
+        } catch (err) {
+          errors.push(
+            `${file.name}: ${getErrorMessage(err, "Gagal mengunggah gambar.")}`
+          );
+        }
+      }
+
+      if (uploadedDrafts.length > 0) {
+        setImages((prev) =>
+          [...prev, ...uploadedDrafts].slice(0, MAX_PRODUCT_IMAGES)
+        );
+      }
+
+      if (files.length > remainingSlots) {
+        errors.push(
+          `Hanya ${remainingSlots} foto pertama yang diunggah (batas maks. ${MAX_PRODUCT_IMAGES} foto).`
+        );
+      }
+
+      if (errors.length > 0) {
+        setUploadError(errors.join(" · "));
+      }
+
+      setUploadingImages(false);
+      setUploadProgress(null);
+    },
+    [images.length, name]
+  );
+
+  const openImagePicker = React.useCallback(() => {
+    if (!uploadingImages && images.length < MAX_PRODUCT_IMAGES) {
+      imageInputRef.current?.click();
+    }
+  }, [uploadingImages, images.length]);
+
+  const handleImagesKeyDown = React.useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if ((e.key === "Enter" || e.key === " ") && !uploadingImages) {
+        e.preventDefault();
+        openImagePicker();
+      }
+    },
+    [uploadingImages, openImagePicker]
+  );
+
+  const handleImagesDragOver = React.useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setDraggingImages(true);
+    },
+    []
+  );
+
+  const handleImagesDragLeave = React.useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setDraggingImages(false);
+    },
+    []
+  );
+
+  const handleImagesDrop = React.useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setDraggingImages(false);
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        void handleUploadImageFiles(e.dataTransfer.files);
+      }
+    },
+    [handleUploadImageFiles]
+  );
+
+  const handleImagesInputChange = React.useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files && e.target.files.length > 0) {
+        void handleUploadImageFiles(e.target.files);
+      }
+      e.target.value = "";
+    },
+    [handleUploadImageFiles]
+  );
+
+  const handleAddPresetOrUrlImage = React.useCallback(
+    (
+      url: string,
+      preferredLabel?: NonNullable<ProductImage["label"]>,
+      preferredAlt?: string
+    ) => {
+      const trimmed = url.trim();
+      if (!trimmed) return;
+      setUploadError(null);
+      setImages((prev) => {
+        if (prev.length >= MAX_PRODUCT_IMAGES) {
+          setUploadError(`Maksimal ${MAX_PRODUCT_IMAGES} foto per produk.`);
+          return prev;
+        }
+        if (prev.some((item) => item.url === trimmed)) {
+          return prev;
+        }
+        const label =
+          preferredLabel ?? (prev.length === 0 ? "Utama" : "Detail");
+        return [
+          ...prev,
+          {
+            id: `img-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+            url: trimmed,
+            alt: preferredAlt || name.trim() || "Foto produk CR7 Racing",
+            label,
+          },
+        ];
+      });
+    },
+    [name]
+  );
+
+  const handleAddManualImage = React.useCallback(() => {
+    const trimmed = manualImageUrl.trim();
+    if (!trimmed) return;
+    handleAddPresetOrUrlImage(trimmed);
+    setManualImageUrl("");
+  }, [manualImageUrl, handleAddPresetOrUrlImage]);
+
+  const handleRemoveImage = React.useCallback((id: string) => {
+    setImages((prev) => {
+      const next = prev.filter((img) => img.id !== id);
+      if (next.length > 0 && next[0].label !== "Utama") {
+        next[0] = { ...next[0], label: "Utama" };
+      }
+      return next;
+    });
+  }, []);
+
+  const handleSetPrimaryImage = React.useCallback((id: string) => {
+    setImages((prev) => {
+      const idx = prev.findIndex((img) => img.id === id);
+      if (idx <= 0) return prev;
+      const target = { ...prev[idx], label: "Utama" as const };
+      const rest = prev
+        .filter((img) => img.id !== id)
+        .map((img) =>
+          img.label === "Utama" ? { ...img, label: "Detail" as const } : img
+        );
+      return [target, ...rest];
+    });
+  }, []);
+
+  const handleMoveImage = React.useCallback(
+    (id: string, direction: "left" | "right") => {
+      setImages((prev) => {
+        const idx = prev.findIndex((img) => img.id === id);
+        if (idx === -1) return prev;
+        const targetIdx = direction === "left" ? idx - 1 : idx + 1;
+        if (targetIdx < 0 || targetIdx >= prev.length) return prev;
+        const next = [...prev];
+        [next[idx], next[targetIdx]] = [next[targetIdx], next[idx]];
+        return next;
+      });
+    },
+    []
+  );
+
+  const handleUpdateImageMeta = React.useCallback(
+    (
+      id: string,
+      patch: Partial<Pick<ProductImageDraft, "alt" | "label">>
+    ) => {
+      setImages((prev) =>
+        prev.map((img) => (img.id === id ? { ...img, ...patch } : img))
+      );
+    },
+    []
+  );
+
   const handleAddVariant = React.useCallback(() => {
     setVariants((prev) => [
       ...prev,
@@ -173,6 +416,7 @@ export function useProductForm({
   const handleSubmit = React.useCallback(
     async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
+      if (uploadingImages) return;
       setError(null);
 
       const parsedVariants: ProductVariant[] = variants
@@ -190,6 +434,24 @@ export function useProductForm({
             : {}),
         }));
 
+      const preparedImages: ProductImage[] =
+        images.length > 0
+          ? images.map((img, idx) => ({
+              url: img.url.trim(),
+              alt:
+                img.alt.trim() ||
+                name.trim() ||
+                "Aksesoris motor CR7 Racing",
+              label: img.label || (idx === 0 ? "Utama" : "Detail"),
+            }))
+          : [
+              {
+                url: DEFAULT_PRODUCT_IMAGE,
+                alt: name.trim() || "Aksesoris motor CR7 Racing",
+                label: "Utama",
+              },
+            ];
+
       const rawPayload: ProductInput = {
         name: name.trim(),
         sku: sku.trim().toUpperCase(),
@@ -198,22 +460,7 @@ export function useProductForm({
         price: Number(price),
         originalPrice: originalPrice.trim() ? Number(originalPrice) : undefined,
         currency: "IDR",
-        images: [
-          {
-            url: imageUrl.trim() || DEFAULT_PRODUCT_IMAGE,
-            alt: name.trim() || "Aksesoris motor CR7 Racing",
-            label: "Utama",
-          },
-          ...(includeBeamImage
-            ? [
-                {
-                  url: BEAM_TEST_IMAGE,
-                  alt: `Uji pola cahaya malam ${name.trim()}`,
-                  label: "Pola Cahaya" as const,
-                },
-              ]
-            : []),
-        ],
+        images: preparedImages,
         variants: parsedVariants,
         shortSpecs: parseCsvList(shortSpecsText),
         fullSpecs: parseKeyValueLines(fullSpecsText),
@@ -253,15 +500,15 @@ export function useProductForm({
       }
     },
     [
+      uploadingImages,
       variants,
+      images,
       name,
       sku,
       slug,
       category,
       price,
       originalPrice,
-      imageUrl,
-      includeBeamImage,
       shortSpecsText,
       fullSpecsText,
       inTheBoxText,
@@ -309,10 +556,27 @@ export function useProductForm({
     setShopeeUrl,
     tiktokUrl,
     setTiktokUrl,
-    imageUrl,
-    setImageUrl,
-    includeBeamImage,
-    setIncludeBeamImage,
+    images,
+    imageInputRef,
+    manualImageUrl,
+    setManualImageUrl,
+    draggingImages,
+    uploadingImages,
+    uploadProgress,
+    uploadError,
+    lastUploadStorage,
+    openImagePicker,
+    handleImagesKeyDown,
+    handleImagesDragOver,
+    handleImagesDragLeave,
+    handleImagesDrop,
+    handleImagesInputChange,
+    handleAddPresetOrUrlImage,
+    handleAddManualImage,
+    handleRemoveImage,
+    handleSetPrimaryImage,
+    handleMoveImage,
+    handleUpdateImageMeta,
     variants,
     handleAddVariant,
     handleUpdateVariant,

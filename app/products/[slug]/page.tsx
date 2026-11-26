@@ -27,6 +27,14 @@ import {
 } from "@/lib/server/catalog-service";
 import { getCatalogCategories } from "@/lib/server/category-service";
 import { getRelatedProducts } from "@/lib/catalog-filters";
+import { formatPrice } from "@/lib/format";
+import { JsonLd } from "@/components/shared/json-ld";
+import {
+  buildBreadcrumbJsonLd,
+  buildProductFaqJsonLd,
+  buildProductJsonLd,
+  toAbsoluteUrl,
+} from "@/lib/seo";
 import { STORE_CONFIG } from "@/config/store";
 
 export async function generateMetadata({
@@ -35,11 +43,43 @@ export async function generateMetadata({
   const { slug } = await params;
   const product = await getCatalogProductBySlug(slug);
   if (!product) {
-    return { title: "Produk Tidak Ditemukan" };
+    return {
+      title: "Produk Tidak Ditemukan",
+      robots: { index: false, follow: false },
+    };
   }
+
+  const productPath = `/products/${product.slug}`;
+  const productUrl = toAbsoluteUrl(productPath);
+  const priceText = formatPrice(product.price, product.currency);
+  const specsSummary = product.shortSpecs.slice(0, 3).join(" · ");
+  const description = `${product.name} (${product.sku}) — ${priceText}${specsSummary ? ` · ${specsSummary}` : ""}. Cek spesifikasi & order resmi di Shopee atau TikTok Shop CR7 Racing.`;
+  const ogImages = product.images
+    .filter((img) => !img.url.toLowerCase().endsWith(".svg"))
+    .map((img) => ({
+      url: toAbsoluteUrl(img.url),
+      alt: img.alt || product.name,
+    }));
+
   return {
-    title: product.name,
-    description: `${product.name} (${product.sku}) — ${product.shortSpecs.join(" · ")}. Order langsung di Shopee atau TikTok Shop resmi CR7 Racing.`,
+    title: `${product.name} (${product.sku})`,
+    description,
+    alternates: {
+      canonical: productPath,
+    },
+    openGraph: {
+      type: "website",
+      url: productUrl,
+      title: `${product.name} | CR7 Racing`,
+      description,
+      ...(ogImages.length > 0 ? { images: ogImages } : {}),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${product.name} | CR7 Racing`,
+      description,
+      ...(ogImages.length > 0 ? { images: ogImages.map((i) => i.url) } : {}),
+    },
   };
 }
 
@@ -62,8 +102,29 @@ async function ProductDetailContent({
   const category = categories.find((c) => c.slug === product.category);
   const related = getRelatedProducts(allProducts, product, 4);
 
+  const breadcrumbItems = [
+    { name: "Beranda", path: "/" },
+    { name: "Katalog", path: "/products" },
+    ...(category
+      ? [
+          {
+            name: category.shortName,
+            path: `/products?category=${category.slug}`,
+          },
+        ]
+      : []),
+    { name: product.name, path: `/products/${product.slug}` },
+  ];
+
+  const structuredData = [
+    buildProductJsonLd(product, category),
+    buildBreadcrumbJsonLd(breadcrumbItems),
+    buildProductFaqJsonLd(product),
+  ];
+
   return (
     <div className="mx-auto w-full max-w-[1320px] px-4 py-8 pb-32 sm:px-6 md:pb-14 lg:px-8">
+      <JsonLd data={structuredData} />
       {/* Breadcrumb */}
       <Breadcrumb className="mb-6">
         <BreadcrumbList>

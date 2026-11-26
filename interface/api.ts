@@ -31,6 +31,8 @@ export interface MotorcycleMutationResponse {
 
 export interface UploadImageResponse {
   url: string;
+  storage?: "r2" | "local";
+  key?: string;
 }
 
 export interface HomeContentResponse {

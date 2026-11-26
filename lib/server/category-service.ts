@@ -16,7 +16,7 @@ export async function getLiveCatalogCategories(): Promise<Category[]> {
 }
 
 export function revalidateCategories(): void {
-  revalidateTag(CATEGORIES_CACHE_TAG, "max");
+  revalidateTag(CATEGORIES_CACHE_TAG, { expire: 0 });
   revalidatePath("/");
   revalidatePath("/products");
   revalidatePath("/products/[slug]", "page");

@@ -10,6 +10,7 @@ import type {
 
 const VALID_BADGES = new Set<string>(PRODUCT_BADGES);
 const LOCAL_IMAGE_PATH_REGEX = /^\/(?:images|uploads)\/[a-zA-Z0-9._-]+$/;
+const SAFE_R2_PATH_REGEX = /^\/[a-zA-Z0-9/._-]+$/;
 const HEX_COLOR_REGEX = /^#[0-9a-fA-F]{6}$/;
 
 const SHOPEE_ALLOWED_HOSTS = new Set([
@@ -56,10 +57,38 @@ export function isAllowedMarketplaceUrl(
   }
 }
 
+function getAllowedR2Origin(): string | null {
+  const raw = (
+    process.env.NEXT_PUBLIC_R2_PUBLIC_URL ||
+    process.env.R2_PUBLIC_URL ||
+    ""
+  ).trim();
+  if (!raw) return null;
+  try {
+    const parsed = new URL(raw);
+    return parsed.protocol === "https:" ? parsed.origin.toLowerCase() : null;
+  } catch {
+    return null;
+  }
+}
+
 export function isSafeLocalImageUrl(src: string): boolean {
   const trimmed = src.trim();
   if (!trimmed || trimmed.includes("..")) return false;
-  return LOCAL_IMAGE_PATH_REGEX.test(trimmed);
+  if (LOCAL_IMAGE_PATH_REGEX.test(trimmed)) return true;
+
+  const allowedOrigin = getAllowedR2Origin();
+  if (!allowedOrigin) return false;
+  try {
+    const parsed = new URL(trimmed);
+    return (
+      parsed.protocol === "https:" &&
+      parsed.origin.toLowerCase() === allowedOrigin &&
+      SAFE_R2_PATH_REGEX.test(parsed.pathname)
+    );
+  } catch {
+    return false;
+  }
 }
 
 export type ValidationResult<T> =
@@ -149,7 +178,7 @@ export function validateProductInput(
       return {
         ok: false,
         error:
-          "Path foto produk harus berasal dari folder lokal /images/... atau /uploads/... yang valid.",
+          "Path foto produk harus berasal dari /images/..., /uploads/..., atau bucket Cloudflare R2 resmi.",
       };
     }
     images.push({
