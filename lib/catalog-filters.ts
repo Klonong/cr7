@@ -86,8 +86,8 @@ export function sortProducts(
       break;
     case "newest":
       sorted.sort((a, b) => {
-        const aNew = a.badges?.includes("New Arrival") ? 1 : 0;
-        const bNew = b.badges?.includes("New Arrival") ? 1 : 0;
+        const aNew = a.badges?.includes("Baru") ? 1 : 0;
+        const bNew = b.badges?.includes("Baru") ? 1 : 0;
         return bNew - aNew;
       });
       break;
@@ -145,4 +145,51 @@ export function computeCatalogStats(products: readonly Product[]): CatalogStats 
     shopeeLinked,
     tiktokLinked,
   };
+}
+
+export interface CategoryBreakdownItem {
+  slug: Product["category"];
+  count: number;
+  inStockCount: number;
+  percentage: number;
+}
+
+export function computeCategoryBreakdown(
+  products: readonly Product[],
+  categorySlugs: readonly Product["category"][]
+): CategoryBreakdownItem[] {
+  const total = products.length || 1;
+  return categorySlugs.map((slug) => {
+    const matches = products.filter((p) => p.category === slug);
+    const inStockCount = matches.filter((p) => p.inStock).length;
+    return {
+      slug,
+      count: matches.length,
+      inStockCount,
+      percentage: Math.round((matches.length / total) * 100),
+    };
+  });
+}
+
+export interface CatalogAttentionItem {
+  product: Product;
+  reasons: ("Sold Out" | "No Shopee Link" | "No TikTok Link")[];
+}
+
+export function getCatalogAttentionItems(
+  products: readonly Product[]
+): CatalogAttentionItem[] {
+  const items: CatalogAttentionItem[] = [];
+
+  for (const product of products) {
+    const reasons: CatalogAttentionItem["reasons"] = [];
+    if (!product.inStock) reasons.push("Sold Out");
+    if (!product.links.shopee) reasons.push("No Shopee Link");
+    if (!product.links.tiktokShop) reasons.push("No TikTok Link");
+    if (reasons.length > 0) {
+      items.push({ product, reasons });
+    }
+  }
+
+  return items;
 }

@@ -9,7 +9,8 @@ import {
   SlidersHorizontal,
   X,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -33,25 +34,28 @@ import {
 import { ProductCard } from "@/components/catalog/product-card";
 import { ProductQuickView } from "@/components/catalog/product-quick-view";
 import { PRODUCT_BADGES } from "@/config/store";
-import { BIKE_MODELS, CATEGORIES } from "@/data/categories";
 import { useProductFilters } from "@/hooks/use-product-filters";
 import type {
+  Category,
   CategorySlug,
   MarketplaceFilter,
+  Motorcycle,
   Product,
   ProductBadge,
   SortOption,
 } from "@/types/catalog";
 
 const SORT_LABELS: Record<SortOption, string> = {
-  featured: "Featured",
-  "price-asc": "Price: Low to High",
-  "price-desc": "Price: High to Low",
-  newest: "Newest Arrivals",
+  featured: "Unggulan",
+  "price-asc": "Harga: Terendah",
+  "price-desc": "Harga: Tertinggi",
+  newest: "Produk Terbaru",
 };
 
 interface FilterPanelProps {
   products: Product[];
+  categories: Category[];
+  motorcycles: Motorcycle[];
   selectedCategories: CategorySlug[];
   toggleCategory: (slug: CategorySlug) => void;
   selectedBike: string;
@@ -68,6 +72,8 @@ interface FilterPanelProps {
 
 function FilterPanel({
   products,
+  categories,
+  motorcycles,
   selectedCategories,
   toggleCategory,
   selectedBike,
@@ -86,7 +92,7 @@ function FilterPanel({
       <div className="flex items-center justify-between">
         <span className="inline-flex items-center gap-2 text-sm font-semibold text-foreground">
           <Filter className="size-4 text-primary" aria-hidden="true" />
-          Catalog Filters
+          Filter Katalog
         </span>
         {activeCount > 0 && (
           <Button
@@ -107,10 +113,10 @@ function FilterPanel({
       {/* Category Filter */}
       <div className="space-y-2.5">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Category
+          Kategori
         </p>
         <div className="space-y-2">
-          {CATEGORIES.map((category) => {
+          {categories.map((category) => {
             const checked = selectedCategories.includes(category.slug);
             const count = products.filter(
               (p) => p.category === category.slug
@@ -141,12 +147,12 @@ function FilterPanel({
       {/* Marketplace Availability */}
       <div className="space-y-2.5">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Marketplace Link
+          Tersedia di Toko
         </p>
         <div className="grid grid-cols-3 gap-1.5">
           {(
             [
-              { value: "all", label: "All" },
+              { value: "all", label: "Semua" },
               { value: "shopee", label: "Shopee" },
               { value: "tiktok", label: "TikTok" },
             ] as const
@@ -171,7 +177,7 @@ function FilterPanel({
       <div className="space-y-2.5">
         <div className="flex items-center justify-between">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Bike Compatibility
+            Kecocokan Motor
           </p>
           {selectedBike && (
             <button
@@ -179,27 +185,27 @@ function FilterPanel({
               onClick={() => setSelectedBike("")}
               className="text-[11px] font-medium text-primary hover:underline"
             >
-              Clear
+              Hapus
             </button>
           )}
         </div>
         <ScrollArea className="h-44 pr-3">
           <div className="space-y-1">
-            {BIKE_MODELS.map((bike) => {
-              const active = selectedBike === bike;
+            {motorcycles.map((moto) => {
+              const active = selectedBike === moto.name;
               return (
                 <button
-                  key={bike}
+                  key={moto.id}
                   type="button"
-                  onClick={() => setSelectedBike(active ? "" : bike)}
+                  onClick={() => setSelectedBike(active ? "" : moto.name)}
                   className={`flex w-full items-center justify-between rounded-md px-2.5 py-1.5 text-left text-xs font-medium transition-colors ${
                     active
                       ? "bg-primary/15 text-primary"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   }`}
                 >
-                  <span>{bike}</span>
-                  {active && <X className="size-3" aria-hidden="true" />}
+                  <span className="truncate">{moto.name}</span>
+                  {active && <X className="size-3 shrink-0" aria-hidden="true" />}
                 </button>
               );
             })}
@@ -212,7 +218,7 @@ function FilterPanel({
       {/* Highlights / Badges */}
       <div className="space-y-2.5">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Highlights
+          Label Produk
         </p>
         <div className="flex flex-wrap gap-1.5">
           {PRODUCT_BADGES.map((badge) => {
@@ -243,13 +249,21 @@ function FilterPanel({
           checked={inStockOnly}
           onCheckedChange={(checked) => setInStockOnly(Boolean(checked))}
         />
-        <span>Hide Sold Out items</span>
+        <span>Sembunyikan stok habis</span>
       </label>
     </div>
   );
 }
 
-export function CatalogBrowser({ products }: { products: Product[] }) {
+export function CatalogBrowser({
+  products,
+  categories,
+  motorcycles,
+}: {
+  products: Product[];
+  categories: Category[];
+  motorcycles: Motorcycle[];
+}) {
   const searchParams = useSearchParams();
   const initialCategory = searchParams.get("category") as CategorySlug | null;
   const initialBike = searchParams.get("bike") ?? "";
@@ -259,6 +273,8 @@ export function CatalogBrowser({ products }: { products: Product[] }) {
     <CatalogBrowserInner
       key={`${initialCategory ?? ""}|${initialBike}|${initialQuery}`}
       products={products}
+      categories={categories}
+      motorcycles={motorcycles}
       initialCategory={initialCategory}
       initialBike={initialBike}
       initialQuery={initialQuery}
@@ -268,17 +284,22 @@ export function CatalogBrowser({ products }: { products: Product[] }) {
 
 function CatalogBrowserInner({
   products,
+  categories,
+  motorcycles,
   initialCategory,
   initialBike,
   initialQuery,
 }: {
   products: Product[];
+  categories: Category[];
+  motorcycles: Motorcycle[];
   initialCategory: CategorySlug | null;
   initialBike: string;
   initialQuery: string;
 }) {
   const filters = useProductFilters({
     products,
+    categories,
     initialCategory,
     initialBike,
     initialQuery,
@@ -290,6 +311,8 @@ function CatalogBrowserInner({
 
   const filterPanelProps: FilterPanelProps = {
     products,
+    categories,
+    motorcycles,
     selectedCategories: filters.selectedCategories,
     toggleCategory: filters.toggleCategory,
     selectedBike: filters.selectedBike,
@@ -308,7 +331,7 @@ function CatalogBrowserInner({
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-[260px_1fr]">
       {/* Sticky Desktop Sidebar */}
       <aside
-        aria-label="Catalog filters"
+        aria-label="Filter katalog"
         className="hidden lg:block sticky top-24 self-start rounded-lg border border-border bg-card p-5"
       >
         <FilterPanel {...filterPanelProps} />
@@ -326,15 +349,15 @@ function CatalogBrowserInner({
             <Input
               value={filters.query}
               onChange={(e) => filters.setQuery(e.target.value)}
-              placeholder="Search part name, SKU, wattage, or bike..."
-              aria-label="Search motorcycle accessories"
+              placeholder="Cari nama produk, SKU, watt, atau motor..."
+              aria-label="Cari aksesoris motor"
               className="h-10 pl-9 pr-9 bg-card"
             />
             {filters.query && (
               <button
                 type="button"
                 onClick={() => filters.setQuery("")}
-                aria-label="Clear search query"
+                aria-label="Hapus kata pencarian"
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-sm p-1 text-muted-foreground hover:text-foreground"
               >
                 <X className="size-3.5" aria-hidden="true" />
@@ -345,16 +368,14 @@ function CatalogBrowserInner({
           <div className="flex items-center gap-2 justify-between sm:justify-end">
             <Sheet open={mobileFilterOpen} onOpenChange={setMobileFilterOpen}>
               <SheetTrigger
-                render={
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="h-10 min-h-[44px] gap-2 lg:hidden"
-                  />
-                }
+                type="button"
+                className={cn(
+                  buttonVariants({ variant: "outline" }),
+                  "h-10 min-h-[44px] gap-2 lg:hidden"
+                )}
               >
                 <SlidersHorizontal className="size-4" aria-hidden="true" />
-                <span>Filters</span>
+                <span>Filter</span>
                 {filters.activeFilterCount > 0 && (
                   <Badge className="ml-0.5 rounded-full px-1.5 py-0 text-[10px]">
                     {filters.activeFilterCount}
@@ -363,9 +384,10 @@ function CatalogBrowserInner({
               </SheetTrigger>
               <SheetContent side="left" className="w-[300px] sm:w-[340px]">
                 <SheetHeader className="text-left">
-                  <SheetTitle>Filter Accessories</SheetTitle>
+                  <SheetTitle>Filter Aksesoris</SheetTitle>
                   <SheetDescription>
-                    Narrow down parts by category, bike fitment, or marketplace.
+                    Saring produk berdasarkan kategori, tipe motor, atau
+                    marketplace.
                   </SheetDescription>
                 </SheetHeader>
                 <div className="overflow-y-auto px-4 pb-6">
@@ -381,16 +403,16 @@ function CatalogBrowserInner({
               }}
             >
               <SelectTrigger
-                aria-label="Sort products"
+                aria-label="Urutkan produk"
                 className="h-10 min-h-[40px] w-[175px] bg-card"
               >
                 <SelectValue>{SORT_LABELS[filters.sortBy]}</SelectValue>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="featured">Featured</SelectItem>
-                <SelectItem value="price-asc">Price: Low to High</SelectItem>
-                <SelectItem value="price-desc">Price: High to Low</SelectItem>
-                <SelectItem value="newest">Newest Arrivals</SelectItem>
+                <SelectItem value="featured">Unggulan</SelectItem>
+                <SelectItem value="price-asc">Harga: Terendah</SelectItem>
+                <SelectItem value="price-desc">Harga: Tertinggi</SelectItem>
+                <SelectItem value="newest">Produk Terbaru</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -399,28 +421,28 @@ function CatalogBrowserInner({
         {/* Result Count & Active Filter Chips */}
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="text-sm text-muted-foreground">
-            Showing{" "}
+            Menampilkan{" "}
             <span className="font-mono font-semibold text-foreground">
               {filters.filteredProducts.length}
             </span>{" "}
-            {filters.filteredProducts.length === 1 ? "accessory" : "accessories"}
+            aksesoris
           </p>
 
           {filters.activeFilterCount > 0 && (
             <div className="flex flex-wrap items-center gap-1.5">
               {filters.selectedCategories.map((slug) => {
-                const cat = CATEGORIES.find((c) => c.slug === slug);
+                const cat = categories.find((c) => c.slug === slug);
                 return (
                   <Badge
                     key={slug}
                     variant="secondary"
-                    className="gap-1 pr-1 text-xs"
+                    className="gap-1 pr-1 text-xs border border-border"
                   >
                     {cat?.shortName ?? slug}
                     <button
                       type="button"
                       onClick={() => filters.toggleCategory(slug)}
-                      aria-label={`Remove ${cat?.shortName ?? slug} filter`}
+                      aria-label={`Hapus filter ${cat?.shortName ?? slug}`}
                       className="rounded-full p-0.5 hover:bg-muted-foreground/20"
                     >
                       <X className="size-3" aria-hidden="true" />
@@ -429,12 +451,15 @@ function CatalogBrowserInner({
                 );
               })}
               {filters.selectedBike && (
-                <Badge variant="secondary" className="gap-1 pr-1 text-xs">
-                  Fits: {filters.selectedBike}
+                <Badge
+                  variant="secondary"
+                  className="gap-1 pr-1 text-xs border border-border"
+                >
+                  Motor: {filters.selectedBike}
                   <button
                     type="button"
                     onClick={() => filters.setSelectedBike("")}
-                    aria-label={`Remove ${filters.selectedBike} filter`}
+                    aria-label={`Hapus filter ${filters.selectedBike}`}
                     className="rounded-full p-0.5 hover:bg-muted-foreground/20"
                   >
                     <X className="size-3" aria-hidden="true" />
@@ -442,12 +467,15 @@ function CatalogBrowserInner({
                 </Badge>
               )}
               {filters.marketplace !== "all" && (
-                <Badge variant="secondary" className="gap-1 pr-1 text-xs">
+                <Badge
+                  variant="secondary"
+                  className="gap-1 pr-1 text-xs border border-border"
+                >
                   {filters.marketplace === "shopee" ? "Shopee" : "TikTok Shop"}
                   <button
                     type="button"
                     onClick={() => filters.setMarketplace("all")}
-                    aria-label="Remove marketplace filter"
+                    aria-label="Hapus filter toko"
                     className="rounded-full p-0.5 hover:bg-muted-foreground/20"
                   >
                     <X className="size-3" aria-hidden="true" />
@@ -461,7 +489,7 @@ function CatalogBrowserInner({
                 onClick={filters.resetFilters}
                 className="h-6 px-2 text-xs text-primary hover:text-primary"
               >
-                Clear all
+                Hapus semua
               </Button>
             </div>
           )}
@@ -484,11 +512,12 @@ function CatalogBrowserInner({
               <Search className="size-5" aria-hidden="true" />
             </div>
             <h3 className="text-base font-semibold text-foreground">
-              No accessories match your filters
+              Tidak ada aksesoris yang sesuai filter
             </h3>
             <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-              Try clearing one of your active filters or searching with a broader
-              term like &ldquo;LED&rdquo;, &ldquo;CNC&rdquo;, or &ldquo;NMAX&rdquo;.
+              Coba hapus salah satu filter aktif atau cari dengan kata kunci
+              seperti &ldquo;LED&rdquo;, &ldquo;CNC&rdquo;, atau
+              &ldquo;NMAX&rdquo;.
             </p>
             <Button
               type="button"
@@ -496,7 +525,7 @@ function CatalogBrowserInner({
               className="mt-5 gap-1.5"
             >
               <RotateCcw className="size-4" aria-hidden="true" />
-              Reset All Filters
+              Reset Semua Filter
             </Button>
           </div>
         )}

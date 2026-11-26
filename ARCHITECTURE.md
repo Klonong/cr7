@@ -1,4 +1,4 @@
-# CR7 MOTO — Frontend Architecture & Backend Integration Guide
+# CR7 Racing — Frontend Architecture & Backend Integration Guide
 
 This project is structured with clear layer boundaries so you can plug in a real database or external backend API without rewriting any React components or pages.
 
@@ -10,60 +10,102 @@ This project is structured with clear layer boundaries so you can plug in a real
 app/                            # Next.js 16 App Router pages & Route Handlers
 ├── api/
 │   ├── products/route.ts       # Public GET /api/products
+│   ├── categories/route.ts     # Public GET /api/categories
+│   ├── motorcycles/route.ts    # Public GET /api/motorcycles
 │   └── admin/
 │       ├── login/route.ts      # POST /api/admin/login
 │       ├── logout/route.ts     # POST /api/admin/logout
+│       ├── upload/route.ts     # POST /api/admin/upload (Drag & Drop image upload to public/uploads)
+│       ├── categories/
+│       │   ├── route.ts        # GET, POST /api/admin/categories
+│       │   └── [slug]/route.ts # PUT, DELETE /api/admin/categories/[slug]
+│       ├── motorcycles/
+│       │   ├── route.ts        # GET, POST /api/admin/motorcycles
+│       │   └── [id]/route.ts   # DELETE /api/admin/motorcycles/[id]
+│       ├── home/
+│       │   ├── route.ts        # GET, PUT /api/admin/home (hero, sections, trust pillars)
+│       │   └── highlights/
+│       │       ├── route.ts    # POST /api/admin/home/highlights
+│       │       └── [id]/route.ts # PUT, PATCH (active), DELETE highlight
 │       └── products/
 │           ├── route.ts        # GET, POST /api/admin/products
 │           └── [id]/route.ts   # PUT, PATCH (stock), DELETE /api/admin/products/[id]
 ├── admin/
-│   ├── page.tsx                # Protected CRUD Console (redirects to /admin/login)
+│   ├── page.tsx                # Protected Admin Dashboard Overview (KPIs, breakdown, alerts)
+│   ├── products/page.tsx       # Protected Catalog Products CRUD Console (with Variants & Drag-Drop)
+│   ├── categories/
+│   │   ├── page.tsx            # Protected Categories Management Console (imageless)
+│   │   └── new/page.tsx        # Dedicated Create New Category Page + Live Preview
+│   ├── motorcycles/
+│   │   ├── page.tsx            # Protected Motorcycle Compatibility Models Console
+│   │   └── new/page.tsx        # Dedicated Add Motorcycle Page + Live Preview
+│   ├── home/page.tsx           # Protected Home Content & Spotlight Carousel Highlights Console
 │   └── login/page.tsx          # Hidden URL-only Admin Login (robots: noindex)
+├── about/
+│   └── page.tsx                # Tentang Kami page + YouTube Channel link & embedded video showcase
 ├── products/
 │   ├── page.tsx                # Filterable public catalog
-│   └── [slug]/page.tsx         # Product Detail Page + mobile sticky buy bar
-├── page.tsx                    # Home Showcase
-└── layout.tsx                  # Root layout + ThemeProvider + StorefrontShell
+│   └── [slug]/page.tsx         # Product Detail Page + Variant selector + mobile sticky buy bar
+├── page.tsx                    # Home Showcase (Hero, Categories, Motorcycles, Featured, Spotlight Carousel)
+└── layout.tsx                  # Root layout + ThemeProvider + StorefrontShell + FloatingWhatsApp
 
 types/                          # Single source of truth for TypeScript contracts
-├── catalog.ts                  # Product, ProductInput, Category, Filters, Stats
-└── api.ts                      # API response envelopes & AdminSession
+├── catalog.ts                  # Product, ProductVariant, ProductInput, Category, Motorcycle, Filters, Stats
+└── api.ts                      # API response envelopes, UploadImageResponse & AdminSession
 
 config/
-└── store.ts                    # Store URLs, nav links, badges, image presets
+└── store.ts                    # CR7 Racing store URLs, YouTube showcase videos, nav links, badges, image presets
 
-data/                           # Static taxonomy & seed data
-├── categories.ts               # Motorcycle accessory categories & bike models
-├── products.ts                 # Default seed catalog
-└── catalog-store.json          # Local JSON persistence (swappable for DB)
+data/                           # Static taxonomy & seed data (Bahasa Indonesia)
+├── categories.ts               # Imageless categories & DEFAULT_MOTORCYCLES
+├── products.ts                 # Default seed catalog with variants per product
+├── home-defaults.ts            # Default Indonesian hero, trust pillars & 3 spotlight highlights
+└── *-store.json                # Local JSON persistence (swappable for DB)
 
 lib/
 ├── utils.ts                    # shadcn cn() utility
 ├── format.ts                   # formatPrice, getDiscountPercent, slugify, key/value & list parsers
 ├── catalog-filters.ts          # Pure filterProducts, sortProducts, getRelatedProducts, computeCatalogStats
 ├── validation/
-│   └── product.ts              # Isomorphic validateProductInput() (used on client & server)
+│   ├── product.ts              # Isomorphic validateProductInput() including variants[]
+│   ├── category.ts             # Isomorphic validateCategoryInput() (imageless)
+│   ├── motorcycle.ts           # Isomorphic validateMotorcycleInput()
+│   └── home.ts                 # Isomorphic validateHomeSettingsInput() & validateHighlightInput()
 ├── api/                        # Client-side HTTP layer (zero raw fetch() in UI components)
 │   ├── client.ts               # Typed apiFetch<T>() + ApiClientError + getErrorMessage()
 │   ├── catalog-api.ts          # fetchPublicProducts, create/update/toggleStock/delete
+│   ├── category-api.ts         # fetchPublicCategories, create/update/delete
+│   ├── motorcycle-api.ts       # fetchPublicMotorcycles, create/delete
+│   ├── upload-api.ts           # uploadAdminImage() (FormData upload for ImageDropzone)
+│   ├── home-api.ts             # saveHomeSettings, create/update/toggle/delete highlights
 │   └── auth-api.ts             # loginAdmin, logoutAdmin
 └── server/                     # Server-only backend integration boundary
     ├── catalog-repository.ts   # CatalogRepository interface (SWAP POINT #1)
     ├── json-catalog-repository.ts # Default JSON implementation
     ├── catalog-service.ts      # Next.js 16 "use cache" reads + revalidateCatalog()
-    └── admin-auth.ts           # Signed HttpOnly cookie auth + requireAdminApiSession() (SWAP POINT #2)
+    ├── category-repository.ts  # CategoryRepository interface (SWAP POINT #2)
+    ├── category-service.ts     # Next.js 16 "use cache" reads + revalidateCategories()
+    ├── motorcycle-repository.ts # MotorcycleRepository interface (SWAP POINT #3)
+    ├── motorcycle-service.ts   # Next.js 16 "use cache" reads + revalidateMotorcycles()
+    ├── home-repository.ts      # HomeRepository interface (SWAP POINT #4)
+    ├── json-home-repository.ts # Default JSON home-content implementation
+    ├── home-service.ts         # Next.js 16 "use cache" reads + revalidateHomeContent()
+    └── admin-auth.ts           # Signed HttpOnly cookie auth + requireAdminApiSession() (SWAP POINT #5)
 
 hooks/                          # Reusable stateful React hooks
 ├── use-product-filters.ts      # Storefront catalog filtering & sorting
-└── use-admin-catalog.ts        # Admin CRUD state, optimistic stock toggle & KPI stats
+├── use-admin-catalog.ts        # Admin CRUD state, optimistic stock toggle & KPI stats
+├── use-admin-categories.ts     # Admin categories CRUD hook
+└── use-admin-home.ts           # Admin Home settings & Highlights CRUD hook
 
 components/
-├── ui/                         # shadcn/ui primitives
-├── shared/                     # BrandLogo, ThemeToggle, OfficialStoreLinks
+├── ui/                         # shadcn/ui primitives (including Carousel)
+├── shared/                     # BrandLogo, ThemeToggle, OfficialStoreLinks, FloatingWhatsApp
 ├── icons/                      # ShopeeIcon, TikTokShopIcon
 ├── layout/                     # Navbar, Footer, CommandSearch, StorefrontShell
-├── catalog/                    # ProductCard, MarketplaceCta, ProductQuickView, ProductGallery, CatalogBrowser
-└── admin/                      # AdminLoginForm, AdminDashboard, ProductFormDialog
+├── about/                      # YouTubeShowcase (channel CTA + interactive YouTube embed player)
+├── catalog/                    # ProductCard, MarketplaceCta, ProductQuickView, ProductDetailPurchase, ProductGallery, CatalogBrowser, SpotlightCarousel
+└── admin/                      # AdminHeader, AdminOverview, AdminLoginForm, AdminDashboard, ProductFormDialog, ImageDropzone, CategoriesManager, CategoryCreateView, MotorcyclesManager, MotorcycleCreateView, HomeSettingsManager, HighlightFormDialog
 ```
 
 ---

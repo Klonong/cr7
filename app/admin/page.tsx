@@ -3,38 +3,50 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/server/admin-auth";
 import { getLiveCatalogProducts } from "@/lib/server/catalog-service";
-import { AdminDashboard } from "@/components/admin/admin-dashboard";
+import { getLiveCatalogCategories } from "@/lib/server/category-service";
+import { getLiveHomeContent } from "@/lib/server/home-service";
+import { AdminOverview } from "@/components/admin/admin-overview";
 
 export const metadata: Metadata = {
-  title: "Catalog Admin Console",
+  title: "Dashboard Admin",
   robots: {
     index: false,
     follow: false,
   },
 };
 
-async function ProtectedAdminContent() {
+async function ProtectedAdminDashboard() {
   const session = await getAdminSession();
   if (!session) {
     redirect("/admin/login");
   }
 
-  const products = await getLiveCatalogProducts();
+  const [products, categories, homeContent] = await Promise.all([
+    getLiveCatalogProducts(),
+    getLiveCatalogCategories(),
+    getLiveHomeContent(),
+  ]);
+
   return (
-    <AdminDashboard initialProducts={products} username={session.username} />
+    <AdminOverview
+      products={products}
+      categories={categories}
+      homeContent={homeContent}
+      username={session.username}
+    />
   );
 }
 
-export default function AdminPage() {
+export default function AdminDashboardPage() {
   return (
     <Suspense
       fallback={
         <div className="flex min-h-screen items-center justify-center bg-background text-sm text-muted-foreground">
-          Loading CR7 MOTO Admin Console...
+          Memuat Dashboard Admin CR7 Racing...
         </div>
       }
     >
-      <ProtectedAdminContent />
+      <ProtectedAdminDashboard />
     </Suspense>
   );
 }

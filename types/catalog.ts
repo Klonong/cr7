@@ -1,17 +1,39 @@
-export type CategorySlug =
-  | "led-headlights"
-  | "signals-tail-lights"
-  | "controls-cockpit"
-  | "protection-body"
-  | "touring-mounts"
-  | "electrical-relays";
+export type CategorySlug = string;
 
 export interface Category {
   slug: CategorySlug;
   name: string;
   shortName: string;
   description: string;
-  image: string;
+}
+
+export interface CategoryInput {
+  name: string;
+  shortName: string;
+  slug?: string;
+  description: string;
+}
+
+export type MotorcycleType =
+  | "Matic"
+  | "Sport"
+  | "Bebek"
+  | "Trail / Adventure"
+  | "Universal";
+
+export interface Motorcycle {
+  id: string;
+  brand: string;
+  model: string;
+  name: string; // e.g., "Yamaha NMAX" or "Universal"
+  type: MotorcycleType;
+}
+
+export interface MotorcycleInput {
+  brand: string;
+  model: string;
+  name?: string;
+  type: MotorcycleType;
 }
 
 export type CurrencyCode = "IDR" | "USD";
@@ -23,20 +45,31 @@ export type MarketplaceFilter = "all" | MarketplacePlatform;
 export type SortOption = "featured" | "price-asc" | "price-desc" | "newest";
 
 export type ProductBadge =
-  | "Best Seller"
-  | "New Arrival"
+  | "Terlaris"
+  | "Baru"
   | "Waterproof"
   | "CNC Alloy";
 
 export interface ProductImage {
   url: string;
   alt: string;
-  label?: "Main" | "Beam Pattern" | "Detail" | "Kit View";
+  label?: "Utama" | "Pola Cahaya" | "Detail" | "Kelengkapan";
 }
 
 export interface ProductLinks {
   shopee?: string;
   tiktokShop?: string;
+}
+
+export interface ProductVariant {
+  id: string;
+  name: string;
+  sku?: string;
+  price?: number;
+  inStock: boolean;
+  colorHex?: string;
+  shopeeUrl?: string;
+  tiktokShopUrl?: string;
 }
 
 export interface Product {
@@ -49,6 +82,7 @@ export interface Product {
   originalPrice?: number;
   currency: CurrencyCode;
   images: ProductImage[];
+  variants: ProductVariant[];
   shortSpecs: string[];
   fullSpecs: Record<string, string>;
   inTheBox: string[];
@@ -70,6 +104,7 @@ export interface ProductInput {
   originalPrice?: number;
   currency?: CurrencyCode;
   images: ProductImage[];
+  variants: ProductVariant[];
   shortSpecs: string[];
   fullSpecs: Record<string, string>;
   inTheBox: string[];

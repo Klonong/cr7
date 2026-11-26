@@ -36,7 +36,7 @@ export function useAdminCatalog(initialProducts: Product[]) {
         setProducts((prev) => [saved, ...prev]);
         setFeedback({
           type: "success",
-          message: `Inserted "${saved.name}" (${saved.sku}) into catalog.`,
+          message: `Produk "${saved.name}" (${saved.sku}) berhasil ditambahkan ke katalog.`,
         });
       } else {
         setProducts((prev) =>
@@ -44,7 +44,7 @@ export function useAdminCatalog(initialProducts: Product[]) {
         );
         setFeedback({
           type: "success",
-          message: `Updated "${saved.name}" (${saved.sku}).`,
+          message: `Produk "${saved.name}" (${saved.sku}) berhasil diperbarui.`,
         });
       }
       router.refresh();
@@ -65,7 +65,7 @@ export function useAdminCatalog(initialProducts: Product[]) {
         await setCatalogProductStock(product.id, nextStock);
         setFeedback({
           type: "success",
-          message: `${product.sku} marked as ${nextStock ? "In Stock" : "Sold Out"}.`,
+          message: `${product.sku} ditandai sebagai ${nextStock ? "Tersedia" : "Habis"}.`,
         });
         router.refresh();
       } catch (error) {
@@ -76,7 +76,7 @@ export function useAdminCatalog(initialProducts: Product[]) {
         );
         setFeedback({
           type: "error",
-          message: getErrorMessage(error, "Failed to update stock status."),
+          message: getErrorMessage(error, "Gagal memperbarui status stok."),
         });
       } finally {
         setTogglingId(null);
@@ -93,14 +93,14 @@ export function useAdminCatalog(initialProducts: Product[]) {
         setProducts((prev) => prev.filter((p) => p.id !== product.id));
         setFeedback({
           type: "success",
-          message: `Deleted "${product.name}" (${product.sku}).`,
+          message: `Produk "${product.name}" (${product.sku}) berhasil dihapus.`,
         });
         router.refresh();
         return true;
       } catch (error) {
         setFeedback({
           type: "error",
-          message: getErrorMessage(error, "Failed to delete product."),
+          message: getErrorMessage(error, "Gagal menghapus produk."),
         });
         return false;
       } finally {

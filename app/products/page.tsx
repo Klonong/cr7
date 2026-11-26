@@ -12,15 +12,21 @@ import {
 import { CatalogBrowser } from "@/components/catalog/catalog-browser";
 import { CatalogGridSkeleton } from "@/components/catalog/product-skeleton";
 import { getCatalogProducts } from "@/lib/server/catalog-service";
+import { getCatalogCategories } from "@/lib/server/category-service";
+import { getCatalogMotorcycles } from "@/lib/server/motorcycle-service";
 
 export const metadata: Metadata = {
-  title: "Full Motorcycle Accessories Catalog",
+  title: "Katalog Lengkap Aksesoris Motor",
   description:
-    "Filter and browse CR7 motorcycle LED headlights, CNC brake levers, frame sliders, phone mounts, and waterproof relay kits. Buy directly on Shopee or TikTok Shop.",
+    "Jelajahi katalog lengkap CR7 Racing: lampu depan LED, Bi-LED projector, handle rem CNC, frame slider, holder HP, dan relay set. Beli langsung di Shopee atau TikTok Shop.",
 };
 
 export default async function ProductsCatalogPage() {
-  const products = await getCatalogProducts();
+  const [products, categories, motorcycles] = await Promise.all([
+    getCatalogProducts(),
+    getCatalogCategories(),
+    getCatalogMotorcycles(),
+  ]);
 
   return (
     <div className="mx-auto w-full max-w-[1320px] px-4 py-8 sm:px-6 lg:px-8">
@@ -28,11 +34,11 @@ export default async function ProductsCatalogPage() {
       <Breadcrumb className="mb-5">
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink render={<Link href="/" />}>Home</BreadcrumbLink>
+            <BreadcrumbLink render={<Link href="/" />}>Beranda</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbPage>Catalog</BreadcrumbPage>
+            <BreadcrumbPage>Katalog</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
@@ -40,21 +46,25 @@ export default async function ProductsCatalogPage() {
       {/* Page Heading */}
       <div className="mb-8 space-y-2 border-b border-border pb-6">
         <p className="font-mono text-xs font-semibold uppercase tracking-wider text-primary">
-          Official Product Index
+          Indeks Produk Resmi CR7 Racing
         </p>
         <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-          Motorcycle Parts &amp; Accessories Catalog
+          Katalog Part &amp; Aksesoris Motor
         </h1>
         <p className="max-w-2xl text-sm text-muted-foreground">
-          Filter by category, bike model, or marketplace availability. Select
-          any product to compare technical specifications and jump straight to
-          our verified Shopee or TikTok Shop checkout page.
+          Filter produk berdasarkan kategori, tipe motor, atau ketersediaan
+          toko. Pilih produk untuk melihat pilihan varian, spesifikasi teknis,
+          dan langsung checkout di Shopee atau TikTok Shop resmi kami.
         </p>
       </div>
 
-      {/* Interactive Filterable Catalog (Wrapped in Suspense for Next.js 16 Cache Components) */}
+      {/* Interactive Filterable Catalog */}
       <Suspense fallback={<CatalogGridSkeleton count={6} />}>
-        <CatalogBrowser products={products} />
+        <CatalogBrowser
+          products={products}
+          categories={categories}
+          motorcycles={motorcycles}
+        />
       </Suspense>
     </div>
   );

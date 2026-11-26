@@ -3,7 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, ShieldCheck, Wrench } from "lucide-react";
+import { ArrowRight, CheckCircle2, Layers, ShieldCheck, Wrench } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -19,7 +19,7 @@ import { MarketplaceCta } from "@/components/catalog/marketplace-cta";
 import { formatPrice, getDiscountPercent } from "@/lib/format";
 import { getCategoryBySlug } from "@/data/categories";
 import { cn } from "@/lib/utils";
-import type { Product } from "@/data/products";
+import type { Product } from "@/types/catalog";
 
 interface ProductQuickViewProps {
   product: Product | null;
@@ -32,24 +32,42 @@ export function ProductQuickView({
   open,
   onOpenChange,
 }: ProductQuickViewProps) {
-  const [selection, setSelection] = React.useState<{ id: string; idx: number }>(
-    { id: "", idx: 0 }
-  );
+  const [selection, setSelection] = React.useState<{
+    id: string;
+    imgIdx: number;
+    variantId: string | null;
+  }>({ id: "", imgIdx: 0, variantId: null });
 
   if (!product) return null;
 
-  const activeImageIdx = selection.id === product.id ? selection.idx : 0;
-  const setActiveImageIdx = (idx: number) =>
-    setSelection({ id: product.id, idx });
+  const variants = product.variants ?? [];
+  const activeImageIdx = selection.id === product.id ? selection.imgIdx : 0;
+  const selectedVariantId =
+    selection.id === product.id
+      ? selection.variantId
+      : (variants[0]?.id ?? null);
+  const selectedVariant =
+    variants.find((v) => v.id === selectedVariantId) ?? null;
+
+  const setActiveImageIdx = (imgIdx: number) =>
+    setSelection({ id: product.id, imgIdx, variantId: selectedVariantId });
+
+  const setSelectedVariantId = (variantId: string) =>
+    setSelection({ id: product.id, imgIdx: activeImageIdx, variantId });
 
   const category = getCategoryBySlug(product.category);
-  const discount = getDiscountPercent(product.price, product.originalPrice);
+  const displayPrice = selectedVariant?.price ?? product.price;
+  const displaySku = selectedVariant?.sku ?? product.sku;
+  const discount = getDiscountPercent(displayPrice, product.originalPrice);
   const activeImage = product.images[activeImageIdx] ?? product.images[0];
+  const isAvailable = selectedVariant
+    ? product.inStock && selectedVariant.inStock
+    : product.inStock;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-3xl p-0 overflow-hidden gap-0">
-        <div className="grid grid-cols-1 md:grid-cols-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 max-h-[88vh] overflow-y-auto">
           {/* Left Gallery */}
           <div className="bg-muted/60 p-4 sm:p-5 flex flex-col gap-3 border-b md:border-b-0 md:border-r border-border">
             <div className="relative overflow-hidden rounded-lg border border-border bg-muted">
@@ -76,7 +94,7 @@ export function ProductQuickView({
                     key={`${img.url}-${idx}`}
                     type="button"
                     onClick={() => setActiveImageIdx(idx)}
-                    aria-label={`View ${img.label ?? `image ${idx + 1}`}`}
+                    aria-label={`Lihat ${img.label ?? `gambar ${idx + 1}`}`}
                     className={cn(
                       "relative size-14 overflow-hidden rounded-md border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                       idx === activeImageIdx
@@ -107,11 +125,11 @@ export function ProductQuickView({
                   </span>
                   <span className="text-muted-foreground/40">•</span>
                   <span className="font-mono text-xs text-muted-foreground">
-                    {product.sku}
+                    {displaySku}
                   </span>
-                  {!product.inStock && (
+                  {!isAvailable && (
                     <Badge variant="destructive" className="text-[10px]">
-                      Sold Out
+                      Stok Habis
                     </Badge>
                   )}
                 </div>
@@ -126,9 +144,9 @@ export function ProductQuickView({
               {/* Price */}
               <div className="flex flex-wrap items-baseline gap-2.5">
                 <span className="font-mono text-2xl font-bold tabular-nums text-foreground">
-                  {formatPrice(product.price, product.currency)}
+                  {formatPrice(displayPrice, product.currency)}
                 </span>
-                {product.originalPrice && (
+                {product.originalPrice && product.originalPrice > displayPrice && (
                   <span className="font-mono text-sm tabular-nums text-muted-foreground line-through">
                     {formatPrice(product.originalPrice, product.currency)}
                   </span>
@@ -140,13 +158,58 @@ export function ProductQuickView({
                 )}
               </div>
 
+              {/* Variant Selector */}
+              {variants.length > 0 && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="inline-flex items-center gap-1.5 font-semibold text-foreground">
+                      <Layers className="size-3.5 text-primary" aria-hidden="true" />
+                      <span>Pilih Varian</span>
+                    </span>
+                    {selectedVariant && (
+                      <span className="text-muted-foreground truncate max-w-[180px]">
+                        {selectedVariant.name}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {variants.map((v) => {
+                      const active = v.id === selectedVariantId;
+                      return (
+                        <button
+                          key={v.id}
+                          type="button"
+                          onClick={() => setSelectedVariantId(v.id)}
+                          className={cn(
+                            "inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                            active
+                              ? "border-primary bg-primary/10 text-primary font-semibold"
+                              : "border-border bg-card text-foreground hover:border-foreground/30",
+                            !v.inStock && "opacity-60 line-through"
+                          )}
+                        >
+                          {v.colorHex && (
+                            <span
+                              className="size-3 rounded-full border border-border shrink-0"
+                              style={{ backgroundColor: v.colorHex }}
+                              aria-hidden="true"
+                            />
+                          )}
+                          <span>{v.name}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {/* Specs */}
               <div className="flex flex-wrap gap-1.5">
                 {product.shortSpecs.map((spec) => (
                   <Badge
                     key={spec}
                     variant="secondary"
-                    className="font-mono text-[11px] font-medium"
+                    className="font-mono text-[11px] font-medium border border-border"
                   >
                     {spec}
                   </Badge>
@@ -159,7 +222,7 @@ export function ProductQuickView({
               <div className="space-y-1.5">
                 <div className="flex items-center gap-1.5 text-xs font-medium text-foreground">
                   <Wrench className="size-3.5 text-primary" aria-hidden="true" />
-                  <span>Compatible Motorcycles</span>
+                  <span>Motor Kompatibel</span>
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   {product.compatibility.map((bike) => (
@@ -175,19 +238,29 @@ export function ProductQuickView({
 
               <div className="flex items-center gap-4 text-xs text-muted-foreground pt-1">
                 <span className="inline-flex items-center gap-1">
-                  <ShieldCheck className="size-3.5 text-status-success" aria-hidden="true" />
-                  100% Original CR7
+                  <ShieldCheck
+                    className="size-3.5 text-status-success"
+                    aria-hidden="true"
+                  />
+                  100% Original CR7 Racing
                 </span>
                 <span className="inline-flex items-center gap-1">
-                  <CheckCircle2 className="size-3.5 text-status-success" aria-hidden="true" />
-                  Official Store Checkout
+                  <CheckCircle2
+                    className="size-3.5 text-status-success"
+                    aria-hidden="true"
+                  />
+                  Checkout Toko Resmi
                 </span>
               </div>
             </div>
 
             {/* CTAs */}
             <div className="space-y-2.5 pt-2">
-              <MarketplaceCta product={product} variant="pdp" />
+              <MarketplaceCta
+                product={product}
+                selectedVariant={selectedVariant}
+                variant="pdp"
+              />
               <Link
                 href={`/products/${product.slug}`}
                 onClick={() => onOpenChange(false)}
@@ -196,7 +269,7 @@ export function ProductQuickView({
                   "w-full justify-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
                 )}
               >
-                <span>View Full Technical Specs & In-the-Box Details</span>
+                <span>Lihat Spesifikasi Lengkap &amp; Isi Paket</span>
                 <ArrowRight className="size-3.5" aria-hidden="true" />
               </Link>
             </div>

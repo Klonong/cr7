@@ -1,68 +1,64 @@
-import type { Category, CategorySlug } from "@/types/catalog";
+import type { Category, CategorySlug, Motorcycle } from "@/types/catalog";
 
-export type { Category, CategorySlug };
+export type { Category, CategorySlug, Motorcycle };
 
 export const CATEGORIES: Category[] = [
   {
     slug: "led-headlights",
-    name: "LED Headlights & Projectors",
-    shortName: "Lighting",
+    name: "Lampu Depan & Projector LED",
+    shortName: "Lampu LED",
     description:
-      "Bi-LED projectors, SQL laser mini driving lights, and crisp Hi/Lo cutoff optics.",
-    image: "/images/prod-biled-projector.svg",
+      "Bi-LED projector, lampu tembak SQL laser, dan optik cutoff rata anti silau.",
   },
   {
     slug: "signals-tail-lights",
-    name: "Signals, DRL & Tail Lights",
-    shortName: "Signals & Tail",
+    name: "Sein, DRL & Stoplamp LED",
+    shortName: "Sein & Stoplamp",
     description:
-      "Sequential smoked turn indicators, twin-blade LED tail lights, and hazard modules.",
-    image: "/images/prod-turn-signal.svg",
+      "Sein running smoke, stoplamp 3-in-1 twin blade, dan modul hazard.",
   },
   {
     slug: "controls-cockpit",
-    name: "Cockpit & Controls",
-    shortName: "Controls",
+    name: "Kokpit & Kontrol CNC",
+    shortName: "Kokpit & CNC",
     description:
-      "CNC 6-click brake levers, waterproof 3-mode light switches, and anti-glare bar-end mirrors.",
-    image: "/images/prod-cnc-levers.svg",
+      "Handle rem CNC 6 klik, saklar waterproof 3 mode, dan spion bar-end anti silau.",
   },
   {
     slug: "protection-body",
-    name: "Protection & Armor",
-    shortName: "Protection",
+    name: "Pelindung & Body Armor",
+    shortName: "Proteksi",
     description:
-      "CNC alloy & Delrin frame sliders, crash guards, and heavy-duty engine armor.",
-    image: "/images/prod-crash-guard.svg",
+      "Frame slider CNC Delrin, crash bar mesin, dan pelindung bodi motor.",
   },
   {
     slug: "touring-mounts",
-    name: "Touring & Phone Mounts",
+    name: "Touring & Holder HP",
     shortName: "Touring",
     description:
-      "Anti-vibration handlebar phone mounts with waterproof USB-C fast charging.",
-    image: "/images/prod-phone-mount.svg",
+      "Holder HP CNC anti getar dengan pengisian cepat USB-C tahan air.",
   },
   {
     slug: "electrical-relays",
-    name: "Wiring & Relays",
-    shortName: "Electrical",
+    name: "Kelistrikan & Relay Set",
+    shortName: "Kelistrikan",
     description:
-      "Waterproof 40A relay harness kits, Deutsch connectors, and inline fuse protection.",
-    image: "/images/prod-relay-harness.svg",
+      "Kabel relay set waterproof 40A, konektor kedap air, dan pengaman sekring.",
   },
 ];
 
-export const BIKE_MODELS = [
-  "Universal",
-  "Yamaha NMAX",
-  "Honda PCX 160",
-  "Honda Vario 160",
-  "Yamaha Aerox 155",
-  "Honda ADV 160",
-  "Kawasaki Ninja / ZX",
-  "CRF / KLX Trail",
-] as const;
+export const DEFAULT_MOTORCYCLES: Motorcycle[] = [
+  { id: "moto-universal", brand: "Universal", model: "Semua Motor", name: "Universal", type: "Universal" },
+  { id: "moto-nmax", brand: "Yamaha", model: "NMAX", name: "Yamaha NMAX", type: "Matic" },
+  { id: "moto-pcx160", brand: "Honda", model: "PCX 160", name: "Honda PCX 160", type: "Matic" },
+  { id: "moto-vario160", brand: "Honda", model: "Vario 160", name: "Honda Vario 160", type: "Matic" },
+  { id: "moto-aerox155", brand: "Yamaha", model: "Aerox 155", name: "Yamaha Aerox 155", type: "Matic" },
+  { id: "moto-adv160", brand: "Honda", model: "ADV 160", name: "Honda ADV 160", type: "Matic" },
+  { id: "moto-ninja", brand: "Kawasaki", model: "Ninja / ZX", name: "Kawasaki Ninja / ZX", type: "Sport" },
+  { id: "moto-crf-klx", brand: "Honda / Kawasaki", model: "CRF / KLX", name: "CRF / KLX Trail", type: "Trail / Adventure" },
+];
+
+export const BIKE_MODELS = DEFAULT_MOTORCYCLES.map((m) => m.name);
 
 export function getCategoryBySlug(slug: string): Category | undefined {
   return CATEGORIES.find((c) => c.slug === slug);

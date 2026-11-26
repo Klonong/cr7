@@ -1,4 +1,5 @@
-import type { Product } from "./catalog";
+import type { Category, Motorcycle, Product } from "./catalog";
+import type { HomeContent, HomeHighlight } from "./home";
 
 export interface ApiErrorResponse {
   error: string;
@@ -10,6 +11,34 @@ export interface ProductsListResponse {
 
 export interface ProductMutationResponse {
   product: Product;
+}
+
+export interface CategoriesListResponse {
+  categories: Category[];
+}
+
+export interface CategoryMutationResponse {
+  category: Category;
+}
+
+export interface MotorcyclesListResponse {
+  motorcycles: Motorcycle[];
+}
+
+export interface MotorcycleMutationResponse {
+  motorcycle: Motorcycle;
+}
+
+export interface UploadImageResponse {
+  url: string;
+}
+
+export interface HomeContentResponse {
+  content: HomeContent;
+}
+
+export interface HighlightMutationResponse {
+  highlight: HomeHighlight;
 }
 
 export interface DeleteResponse {

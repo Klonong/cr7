@@ -1,9 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { CATEGORIES } from "@/data/categories";
 import { filterProducts, sortProducts } from "@/lib/catalog-filters";
 import type {
+  Category,
   CategorySlug,
   MarketplaceFilter,
   Product,
@@ -13,6 +13,7 @@ import type {
 
 interface UseProductFiltersOptions {
   products: readonly Product[];
+  categories: readonly Category[];
   initialCategory?: CategorySlug | null;
   initialBike?: string;
   initialQuery?: string;
@@ -20,6 +21,7 @@ interface UseProductFiltersOptions {
 
 export function useProductFilters({
   products,
+  categories,
   initialCategory = null,
   initialBike = "",
   initialQuery = "",
@@ -28,7 +30,7 @@ export function useProductFilters({
   const [selectedCategories, setSelectedCategories] = React.useState<
     CategorySlug[]
   >(
-    initialCategory && CATEGORIES.some((c) => c.slug === initialCategory)
+    initialCategory && categories.some((c) => c.slug === initialCategory)
       ? [initialCategory]
       : []
   );

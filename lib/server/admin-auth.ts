@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
+import { connection, NextResponse } from "next/server";
 import type { AdminSession } from "@/types/api";
 
 export const ADMIN_COOKIE_NAME = "cr7_admin_session";
@@ -84,6 +84,7 @@ export function verifySessionToken(
 }
 
 export async function getAdminSession(): Promise<AdminSession | null> {
+  await connection();
   const cookieStore = await cookies();
   const token = cookieStore.get(ADMIN_COOKIE_NAME)?.value;
   return verifySessionToken(token);

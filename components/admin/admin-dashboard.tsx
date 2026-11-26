@@ -3,11 +3,9 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   CheckCircle2,
   ExternalLink,
-  LogOut,
   Package,
   Pencil,
   Plus,
@@ -50,27 +48,27 @@ import {
   ShopeeIcon,
   TikTokShopIcon,
 } from "@/components/icons/marketplace-icons";
-import { BrandLogo } from "@/components/shared/brand-logo";
-import { ThemeToggle } from "@/components/shared/theme-toggle";
+import { AdminHeader } from "@/components/admin/admin-header";
 import { ProductFormDialog } from "@/components/admin/product-form-dialog";
 import { DEFAULT_PRODUCT_IMAGE } from "@/config/store";
-import { CATEGORIES, getCategoryBySlug } from "@/data/categories";
 import { useAdminCatalog } from "@/hooks/use-admin-catalog";
-import { logoutAdmin } from "@/lib/api/auth-api";
 import { formatPrice } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import type { CategorySlug, Product } from "@/types/catalog";
+import type { Category, CategorySlug, Motorcycle, Product } from "@/types/catalog";
 
 interface AdminDashboardProps {
   initialProducts: Product[];
+  categories: Category[];
+  motorcycles: Motorcycle[];
   username: string;
 }
 
 export function AdminDashboard({
   initialProducts,
+  categories,
+  motorcycles,
   username,
 }: AdminDashboardProps) {
-  const router = useRouter();
   const catalog = useAdminCatalog(initialProducts);
 
   const [formOpen, setFormOpen] = React.useState(false);
@@ -97,75 +95,32 @@ export function AdminDashboard({
     setDeletingProduct(null);
   };
 
-  const handleLogout = async () => {
-    await logoutAdmin();
-    router.replace("/admin/login");
-    router.refresh();
-  };
+  const findCategory = (slug: string) =>
+    categories.find((c) => c.slug === slug);
 
   const selectedCategoryLabel =
     catalog.categoryFilter === "all"
-      ? "All Categories"
-      : (getCategoryBySlug(catalog.categoryFilter)?.shortName ??
+      ? "Semua Kategori"
+      : (findCategory(catalog.categoryFilter)?.shortName ??
         catalog.categoryFilter);
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      {/* Dedicated Admin Topbar */}
-      <header className="sticky top-0 z-40 border-b border-border bg-card/90 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-[1320px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
-          <BrandLogo
-            href={null}
-            badge="Admin"
-            subtitle={`Signed in as ${username}`}
-          />
-
-          <div className="flex items-center gap-2">
-            <Link
-              href="/"
-              target="_blank"
-              className={cn(
-                buttonVariants({ variant: "outline", size: "sm" }),
-                "h-9 gap-1.5 text-xs"
-              )}
-            >
-              <span className="hidden sm:inline">View Storefront</span>
-              <span className="sm:hidden">Store</span>
-              <ExternalLink
-                className="size-3.5 opacity-75"
-                aria-hidden="true"
-              />
-            </Link>
-
-            <ThemeToggle withTooltip={false} />
-
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleLogout}
-              className="h-9 gap-1.5 text-xs text-destructive hover:text-destructive"
-            >
-              <LogOut className="size-3.5" aria-hidden="true" />
-              <span>Sign Out</span>
-            </Button>
-          </div>
-        </div>
-      </header>
+      <AdminHeader username={username} />
 
       <div className="mx-auto w-full max-w-[1320px] flex-1 px-4 py-8 sm:px-6 lg:px-8 space-y-6">
         {/* Heading + Primary Insert Action */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="space-y-1">
             <p className="font-mono text-xs font-semibold uppercase tracking-wider text-primary">
-              Catalog Management
+              Manajemen Katalog
             </p>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-              Motorcycle Accessories Inventory
+              Daftar Produk Aksesoris Motor
             </h1>
             <p className="text-sm text-muted-foreground">
-              Insert, edit, toggle stock, or delete products. Changes sync
-              immediately to the public storefront.
+              Tambah, edit varian &amp; foto, ubah status stok, atau hapus
+              produk. Perubahan langsung tampil di toko publik.
             </p>
           </div>
 
@@ -175,7 +130,7 @@ export function AdminDashboard({
             className="h-11 min-h-[44px] gap-2 px-5 font-semibold self-start sm:self-auto"
           >
             <Plus className="size-4" aria-hidden="true" />
-            <span>Add Product</span>
+            <span>Tambah Produk</span>
           </Button>
         </div>
 
@@ -183,7 +138,7 @@ export function AdminDashboard({
         <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           <Card className="rounded-lg border border-border bg-card p-4 ring-0 gap-1">
             <p className="text-xs font-medium text-muted-foreground">
-              Total Catalog SKUs
+              Total SKU Produk
             </p>
             <p className="font-mono text-2xl font-extrabold tabular-nums text-foreground">
               {catalog.stats.total}
@@ -192,14 +147,14 @@ export function AdminDashboard({
 
           <Card className="rounded-lg border border-border bg-card p-4 ring-0 gap-1">
             <p className="text-xs font-medium text-muted-foreground">
-              Active / In Stock
+              Stok Tersedia
             </p>
             <div className="flex items-baseline gap-2">
               <p className="font-mono text-2xl font-extrabold tabular-nums text-status-success">
                 {catalog.stats.inStock}
               </p>
               <span className="font-mono text-xs text-muted-foreground">
-                / {catalog.stats.soldOut} sold out
+                / {catalog.stats.soldOut} habis
               </span>
             </div>
           </Card>
@@ -207,7 +162,7 @@ export function AdminDashboard({
           <Card className="rounded-lg border border-border bg-card p-4 ring-0 gap-1">
             <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
               <ShopeeIcon className="size-3.5 text-shopee" />
-              <span>Shopee Linked</span>
+              <span>Terhubung Shopee</span>
             </p>
             <p className="font-mono text-2xl font-extrabold tabular-nums text-foreground">
               {catalog.stats.shopeeLinked}
@@ -217,7 +172,7 @@ export function AdminDashboard({
           <Card className="rounded-lg border border-border bg-card p-4 ring-0 gap-1">
             <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
               <TikTokShopIcon className="size-3.5" />
-              <span>TikTok Shop Linked</span>
+              <span>Terhubung TikTok Shop</span>
             </p>
             <p className="font-mono text-2xl font-extrabold tabular-nums text-foreground">
               {catalog.stats.tiktokLinked}
@@ -243,7 +198,7 @@ export function AdminDashboard({
             <button
               type="button"
               onClick={catalog.clearFeedback}
-              aria-label="Dismiss message"
+              aria-label="Tutup notifikasi"
               className="rounded p-1 hover:bg-black/5 dark:hover:bg-white/10"
             >
               <X className="size-4" aria-hidden="true" />
@@ -261,8 +216,8 @@ export function AdminDashboard({
             <Input
               value={catalog.search}
               onChange={(e) => catalog.setSearch(e.target.value)}
-              placeholder="Search by product name, SKU, or bike..."
-              aria-label="Filter admin catalog"
+              placeholder="Cari nama produk, SKU, atau tipe motor..."
+              aria-label="Filter katalog admin"
               className="h-10 pl-9 bg-card"
             />
           </div>
@@ -278,8 +233,8 @@ export function AdminDashboard({
                 <SelectValue>{selectedCategoryLabel}</SelectValue>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                {CATEGORIES.map((c) => (
+                <SelectItem value="all">Semua Kategori</SelectItem>
+                {categories.map((c) => (
                   <SelectItem key={c.slug} value={c.slug}>
                     {c.shortName}
                   </SelectItem>
@@ -290,9 +245,9 @@ export function AdminDashboard({
             <div className="flex rounded-lg border border-border bg-card p-1">
               {(
                 [
-                  { id: "all", label: "All" },
-                  { id: "in", label: "In Stock" },
-                  { id: "out", label: "Sold Out" },
+                  { id: "all", label: "Semua" },
+                  { id: "in", label: "Tersedia" },
+                  { id: "out", label: "Habis" },
                 ] as const
               ).map((tab) => (
                 <button
@@ -318,12 +273,12 @@ export function AdminDashboard({
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/40 hover:bg-muted/40">
-                <TableHead className="w-[340px]">Product</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Price</TableHead>
-                <TableHead>Marketplaces</TableHead>
-                <TableHead>Stock</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="w-[340px]">Produk</TableHead>
+                <TableHead>Kategori &amp; Varian</TableHead>
+                <TableHead>Harga</TableHead>
+                <TableHead>Marketplace</TableHead>
+                <TableHead>Stok</TableHead>
+                <TableHead className="text-right">Aksi</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -338,13 +293,14 @@ export function AdminDashboard({
                         className="size-6 opacity-50"
                         aria-hidden="true"
                       />
-                      <span>No products match your search criteria.</span>
+                      <span>Tidak ada produk yang cocok dengan filter.</span>
                     </div>
                   </TableCell>
                 </TableRow>
               ) : (
                 catalog.filteredProducts.map((product) => {
-                  const category = getCategoryBySlug(product.category);
+                  const category = findCategory(product.category);
+                  const variantCount = product.variants?.length ?? 0;
                   return (
                     <TableRow key={product.id}>
                       <TableCell>
@@ -368,7 +324,7 @@ export function AdminDashboard({
                               {product.featured && (
                                 <Star
                                   className="size-3.5 shrink-0 fill-amber-400 text-amber-400"
-                                  aria-label="Featured on home"
+                                  aria-label="Produk unggulan"
                                 />
                               )}
                             </div>
@@ -380,12 +336,19 @@ export function AdminDashboard({
                       </TableCell>
 
                       <TableCell>
-                        <Badge
-                          variant="secondary"
-                          className="text-xs font-medium"
-                        >
-                          {category?.shortName ?? product.category}
-                        </Badge>
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <Badge
+                            variant="secondary"
+                            className="text-xs font-medium border border-border"
+                          >
+                            {category?.shortName ?? product.category}
+                          </Badge>
+                          {variantCount > 0 && (
+                            <Badge variant="outline" className="font-mono text-[10px]">
+                              {variantCount} varian
+                            </Badge>
+                          )}
+                        </div>
                       </TableCell>
 
                       <TableCell>
@@ -416,7 +379,7 @@ export function AdminDashboard({
                             </a>
                           ) : (
                             <span className="rounded-md border border-dashed border-border px-2 py-1 text-[11px] text-muted-foreground/60">
-                              No Shopee
+                              Tanpa Shopee
                             </span>
                           )}
 
@@ -432,7 +395,7 @@ export function AdminDashboard({
                             </a>
                           ) : (
                             <span className="rounded-md border border-dashed border-border px-2 py-1 text-[11px] text-muted-foreground/60">
-                              No TikTok
+                              Tanpa TikTok
                             </span>
                           )}
                         </div>
@@ -446,7 +409,7 @@ export function AdminDashboard({
                             onCheckedChange={(checked) =>
                               catalog.toggleStock(product, Boolean(checked))
                             }
-                            aria-label={`Toggle stock status for ${product.name}`}
+                            aria-label={`Ubah status stok ${product.name}`}
                           />
                           <span
                             className={cn(
@@ -456,7 +419,7 @@ export function AdminDashboard({
                                 : "text-muted-foreground"
                             )}
                           >
-                            {product.inStock ? "In Stock" : "Sold Out"}
+                            {product.inStock ? "Tersedia" : "Habis"}
                           </span>
                         </div>
                       </TableCell>
@@ -466,7 +429,7 @@ export function AdminDashboard({
                           <Link
                             href={`/products/${product.slug}`}
                             target="_blank"
-                            aria-label={`Preview ${product.name}`}
+                            aria-label={`Lihat ${product.name}`}
                             className={cn(
                               buttonVariants({
                                 variant: "ghost",
@@ -493,7 +456,7 @@ export function AdminDashboard({
                             variant="ghost"
                             size="icon-sm"
                             onClick={() => setDeletingProduct(product)}
-                            aria-label={`Delete ${product.name}`}
+                            aria-label={`Hapus ${product.name}`}
                             className="text-destructive hover:text-destructive hover:bg-destructive/10"
                           >
                             <Trash2 className="size-3.5" aria-hidden="true" />
@@ -511,7 +474,7 @@ export function AdminDashboard({
         {/* Mobile Stacked Cards */}
         <div className="grid grid-cols-1 gap-3 md:hidden">
           {catalog.filteredProducts.map((product) => {
-            const category = getCategoryBySlug(product.category);
+            const category = findCategory(product.category);
             return (
               <Card
                 key={product.id}
@@ -532,7 +495,7 @@ export function AdminDashboard({
                       <span className="font-mono text-[11px] text-muted-foreground">
                         {product.sku}
                       </span>
-                      <Badge variant="secondary" className="text-[10px]">
+                      <Badge variant="secondary" className="text-[10px] border border-border">
                         {category?.shortName ?? product.category}
                       </Badge>
                     </div>
@@ -553,10 +516,10 @@ export function AdminDashboard({
                       onCheckedChange={(checked) =>
                         catalog.toggleStock(product, Boolean(checked))
                       }
-                      aria-label={`Toggle stock for ${product.name}`}
+                      aria-label={`Ubah stok ${product.name}`}
                     />
                     <span className="text-xs font-medium text-muted-foreground">
-                      {product.inStock ? "In Stock" : "Sold Out"}
+                      {product.inStock ? "Tersedia" : "Habis"}
                     </span>
                   </div>
 
@@ -577,7 +540,7 @@ export function AdminDashboard({
                       size="sm"
                       onClick={() => setDeletingProduct(product)}
                       className="h-9 min-h-[40px] px-3 text-xs"
-                      aria-label={`Delete ${product.name}`}
+                      aria-label={`Hapus ${product.name}`}
                     >
                       <Trash2 className="size-3.5" aria-hidden="true" />
                     </Button>
@@ -594,6 +557,8 @@ export function AdminDashboard({
         open={formOpen}
         onOpenChange={setFormOpen}
         product={editingProduct}
+        categories={categories}
+        motorcycles={motorcycles}
         onSaved={catalog.applySavedProduct}
       />
 
@@ -606,26 +571,26 @@ export function AdminDashboard({
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete this accessory?</AlertDialogTitle>
+            <AlertDialogTitle>Hapus produk ini?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently remove{" "}
+              Produk{" "}
               <strong className="text-foreground">
                 {deletingProduct?.name}
               </strong>{" "}
-              (<span className="font-mono">{deletingProduct?.sku}</span>) from
-              the live CR7 MOTO catalog. This action cannot be undone.
+              (<span className="font-mono">{deletingProduct?.sku}</span>) akan
+              dihapus permanen dari katalog CR7 Racing.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={catalog.deleting}>
-              Cancel
+              Batal
             </AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
               onClick={handleConfirmDelete}
               disabled={catalog.deleting}
             >
-              {catalog.deleting ? "Deleting..." : "Delete Product"}
+              {catalog.deleting ? "Menghapus..." : "Hapus Produk"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

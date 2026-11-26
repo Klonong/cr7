@@ -43,8 +43,8 @@ All tokens map directly into `app/globals.css` using Tailwind CSS v4 `@theme inl
 | **Background** (`--background`) | `#FAFAFA` | `#09090B` | Page canvas |
 | **Surface / Card** (`--card`) | `#FFFFFF` | `#121215` | Product cards, filter panels, modals |
 | **Surface Elevated** (`--muted`) | `#F4F4F5` | `#1C1C21` | Product image backdrop, spec pills, search input |
-| **Primary Brand** (`--primary`) | `#DC2626` *(Racing Red)* | `#EF4444` | Active tabs, primary brand accents, focus highlights |
-| **Primary Foreground** | `#FFFFFF` | `#FFFFFF` | Text on primary accents |
+| **Primary Brand** (`--primary`) | `#CA0C1F` *(CR7 Red)* | `#CA0C1F` | Header background, primary CTAs, active accents |
+| **Primary Foreground / Secondary** (`--secondary`) | `#FEFEFE` *(Crisp White)* | `#FEFEFE` | Text on primary red (`5.80:1` WCAG AA), secondary surfaces |
 | **Text Primary** (`--foreground`) | `#09090B` | `#FAFAFA` | Titles, prices, primary copy (`>15:1` contrast) |
 | **Text Muted** (`--muted-foreground`) | `#52525B` | `#A1A1AA` | SKUs, category labels, secondary specs (`>=5.7:1` contrast) |
 | **Border** (`--border`) | `#E4E4E7` | `#27272A` | Hairline card edges, dividers, spec tables |

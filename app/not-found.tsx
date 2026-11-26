@@ -10,15 +10,15 @@ export default function NotFound() {
         <SearchX className="size-6" aria-hidden="true" />
       </div>
       <p className="font-mono text-xs font-semibold uppercase tracking-wider text-primary">
-        404 · Part Not Found
+        404 · Halaman Tidak Ditemukan
       </p>
       <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-foreground">
-        Accessory Listing Not Found
+        Produk atau Halaman Tidak Tersedia
       </h1>
       <p className="mt-2 text-sm text-muted-foreground">
-        This motorcycle part may have been discontinued or moved. Browse our
-        active catalog to find compatible lighting, CNC controls, and touring
-        gear.
+        Aksesoris yang Anda cari mungkin telah dipindahkan atau sudah tidak
+        diproduksi. Silakan lihat katalog aktif CR7 Racing untuk pilihan lampu
+        LED dan part CNC lainnya.
       </p>
       <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
         <Link
@@ -26,10 +26,10 @@ export default function NotFound() {
           className={cn(buttonVariants({ variant: "default" }), "gap-2")}
         >
           <ArrowLeft className="size-4" aria-hidden="true" />
-          <span>Back to Full Catalog</span>
+          <span>Kembali ke Katalog</span>
         </Link>
         <Link href="/" className={buttonVariants({ variant: "outline" })}>
-          Return Home
+          Ke Beranda
         </Link>
       </div>
     </div>

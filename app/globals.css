@@ -55,37 +55,37 @@
 :root {
   --radius: 0.5rem;
 
-  /* Precision Garage — Light Mode */
-  --background: #fafafa;
+  /* CR7 Brand Palette — Light Mode (#CA0C1F Red + #FEFEFE White) */
+  --background: #f5f5f7;
   --foreground: #09090b;
-  --card: #ffffff;
+  --card: #fefefe;
   --card-foreground: #09090b;
-  --popover: #ffffff;
+  --popover: #fefefe;
   --popover-foreground: #09090b;
-  --primary: #dc2626;
-  --primary-foreground: #ffffff;
-  --secondary: #f4f4f5;
+  --primary: #ca0c1f;
+  --primary-foreground: #fefefe;
+  --secondary: #fefefe;
   --secondary-foreground: #18181b;
-  --muted: #f4f4f5;
+  --muted: #ececef;
   --muted-foreground: #52525b;
   --accent: #f4f4f5;
   --accent-foreground: #18181b;
-  --destructive: #b91c1c;
-  --destructive-foreground: #ffffff;
+  --destructive: #ca0c1f;
+  --destructive-foreground: #fefefe;
   --border: #e4e4e7;
   --input: #e4e4e7;
-  --ring: #dc2626;
+  --ring: #ca0c1f;
 
   /* Marketplace Brand Tokens (WCAG AA Verified) */
   --shopee: #c83214;
   --shopee-hover: #a8280e;
-  --shopee-foreground: #ffffff;
+  --shopee-foreground: #fefefe;
   --shopee-soft: #fff1ee;
   --shopee-soft-foreground: #a8280e;
 
   --tiktok: #0f0f0f;
   --tiktok-hover: #262626;
-  --tiktok-foreground: #ffffff;
+  --tiktok-foreground: #fefefe;
   --tiktok-accent-pink: #fe2c55;
   --tiktok-accent-cyan: #25f4ee;
 
@@ -95,37 +95,37 @@
 }
 
 .dark {
-  /* Precision Garage — Dark Mode */
+  /* CR7 Brand Palette — Dark Mode (#CA0C1F Red + #FEFEFE White) */
   --background: #09090b;
-  --foreground: #fafafa;
+  --foreground: #fefefe;
   --card: #121215;
-  --card-foreground: #fafafa;
+  --card-foreground: #fefefe;
   --popover: #121215;
-  --popover-foreground: #fafafa;
-  --primary: #ef4444;
-  --primary-foreground: #ffffff;
-  --secondary: #1c1c21;
-  --secondary-foreground: #fafafa;
+  --popover-foreground: #fefefe;
+  --primary: #ca0c1f;
+  --primary-foreground: #fefefe;
+  --secondary: #fefefe;
+  --secondary-foreground: #18181b;
   --muted: #1c1c21;
   --muted-foreground: #a1a1aa;
   --accent: #27272a;
-  --accent-foreground: #fafafa;
-  --destructive: #ef4444;
-  --destructive-foreground: #ffffff;
+  --accent-foreground: #fefefe;
+  --destructive: #e11d48;
+  --destructive-foreground: #fefefe;
   --border: #27272a;
   --input: #27272a;
-  --ring: #f87171;
+  --ring: #ca0c1f;
 
   /* Marketplace Brand Tokens (Dark Mode) */
   --shopee: #d43819;
   --shopee-hover: #b82d12;
-  --shopee-foreground: #ffffff;
+  --shopee-foreground: #fefefe;
   --shopee-soft: #2e140e;
   --shopee-soft-foreground: #fca5a5;
 
   --tiktok: #18181b;
   --tiktok-hover: #27272a;
-  --tiktok-foreground: #fafafa;
+  --tiktok-foreground: #fefefe;
 
   --status-success: #22c55e;
   --status-warning: #f59e0b;

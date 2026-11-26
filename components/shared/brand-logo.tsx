@@ -1,5 +1,5 @@
+import Image from "next/image";
 import Link from "next/link";
-import { Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { STORE_CONFIG } from "@/config/store";
 import { cn } from "@/lib/utils";
@@ -9,6 +9,8 @@ interface BrandLogoProps {
   badge?: string;
   subtitle?: string;
   size?: "sm" | "md" | "lg";
+  inverted?: boolean;
+  onDark?: boolean;
   className?: string;
 }
 
@@ -17,47 +19,84 @@ export function BrandLogo({
   badge,
   subtitle,
   size = "md",
+  inverted = false,
+  onDark = false,
   className,
 }: BrandLogoProps) {
-  const iconBoxSize =
-    size === "lg" ? "size-12 rounded-xl" : size === "sm" ? "size-7 rounded-md" : "size-9 rounded-lg";
-  const iconSize = size === "lg" ? "size-6" : size === "sm" ? "size-4" : "size-5";
+  const isLightText = inverted || onDark;
+
+  const imgHeightClass =
+    size === "lg"
+      ? "h-10 w-auto"
+      : size === "sm"
+        ? "h-6 w-auto"
+        : "h-8 sm:h-9 w-auto";
+
+  const frameClass = onDark
+    ? "inline-flex shrink-0 items-center"
+    : cn(
+        "inline-flex shrink-0 items-center bg-[#000000] border border-black/10 dark:border-white/15 shadow-xs",
+        size === "lg"
+          ? "rounded-xl px-3.5 py-2"
+          : size === "sm"
+            ? "rounded-md px-2 py-1"
+            : "rounded-lg px-2.5 py-1.5"
+      );
+
+  const showMeta = Boolean(badge || subtitle);
 
   const content = (
-    <span className={cn("group inline-flex items-center gap-2.5", className)}>
+    <span className={cn("group inline-flex items-start gap-3", className)}>
       <span
         className={cn(
-          "flex shrink-0 items-center justify-center bg-primary text-primary-foreground shadow-xs transition-transform group-hover:scale-105 motion-reduce:transition-none",
-          iconBoxSize
+          frameClass,
+          "transition-transform group-hover:scale-[1.03] motion-reduce:transition-none"
         )}
       >
-        <Zap className={cn(iconSize, "fill-current")} aria-hidden="true" />
+        <Image
+          src="/images/cr7-logo.png"
+          alt={STORE_CONFIG.brandName}
+          width={664}
+          height={274}
+          priority
+          className={cn("object-contain select-none", imgHeightClass)}
+        />
       </span>
-      <span className="flex flex-col text-left">
-        <span className="flex items-center gap-1.5">
-          <span
-            className={cn(
-              "font-extrabold tracking-tight text-foreground",
-              size === "lg" ? "text-xl" : "text-base"
-            )}
-          >
-            {STORE_CONFIG.brandName}
-          </span>
+
+      {showMeta ? (
+        <span className="flex flex-col items-start text-left">
           {badge && (
             <Badge
               variant="secondary"
-              className="px-1.5 py-0 font-mono text-[10px] uppercase tracking-wider"
+              className={cn(
+                "px-1.5 py-0 font-mono text-[10px] uppercase tracking-wider",
+                isLightText
+                  ? "bg-white/15 text-[#fefefe] border border-white/20 hover:bg-white/20"
+                  : "border border-border"
+              )}
             >
               {badge}
             </Badge>
           )}
+          {subtitle && (
+            <span
+              className={cn(
+                "text-[11px] leading-none",
+                badge && "mt-1",
+                onDark
+                  ? "text-zinc-400"
+                  : inverted
+                    ? "text-primary-foreground/80"
+                    : "text-muted-foreground"
+              )}
+            >
+              {subtitle}
+            </span>
+          )}
         </span>
-        {subtitle && (
-          <span className="text-[11px] leading-tight text-muted-foreground">
-            {subtitle}
-          </span>
-        )}
-      </span>
+      ) : (
+        <span className="sr-only">{STORE_CONFIG.brandName}</span>
+      )}
     </span>
   );
 
@@ -66,7 +105,11 @@ export function BrandLogo({
   return (
     <Link
       href={href}
-      className="inline-flex rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      aria-label={STORE_CONFIG.brandName}
+      className={cn(
+        "inline-flex rounded-md focus-visible:outline-none focus-visible:ring-2",
+        isLightText ? "focus-visible:ring-white/80" : "focus-visible:ring-ring"
+      )}
     >
       {content}
     </Link>

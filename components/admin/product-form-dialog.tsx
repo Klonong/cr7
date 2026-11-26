@@ -1,8 +1,7 @@
 "use client";
 
 import * as React from "react";
-import Image from "next/image";
-import { AlertCircle, Loader2, Plus, Save } from "lucide-react";
+import { AlertCircle, Layers, Loader2, Plus, Save, Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -28,13 +27,13 @@ import {
   ShopeeIcon,
   TikTokShopIcon,
 } from "@/components/icons/marketplace-icons";
+import { ImageDropzone } from "@/components/admin/image-dropzone";
 import {
   BEAM_TEST_IMAGE,
   DEFAULT_PRODUCT_IMAGE,
   PRODUCT_BADGES,
   PRODUCT_IMAGE_PRESETS,
 } from "@/config/store";
-import { BIKE_MODELS, CATEGORIES } from "@/data/categories";
 import {
   createCatalogProduct,
   updateCatalogProduct,
@@ -49,16 +48,46 @@ import {
 } from "@/lib/format";
 import { validateProductInput } from "@/lib/validation/product";
 import type {
+  Category,
   CategorySlug,
+  Motorcycle,
   Product,
   ProductBadge,
   ProductInput,
+  ProductVariant,
 } from "@/types/catalog";
+
+interface VariantDraft {
+  id: string;
+  name: string;
+  sku: string;
+  price: string;
+  colorHex: string;
+  inStock: boolean;
+  shopeeUrl: string;
+  tiktokShopUrl: string;
+}
+
+function toVariantDrafts(variants?: ProductVariant[]): VariantDraft[] {
+  if (!variants || variants.length === 0) return [];
+  return variants.map((v) => ({
+    id: v.id,
+    name: v.name,
+    sku: v.sku ?? "",
+    price: v.price ? String(v.price) : "",
+    colorHex: v.colorHex ?? "#CA0C1F",
+    inStock: v.inStock,
+    shopeeUrl: v.shopeeUrl ?? "",
+    tiktokShopUrl: v.tiktokShopUrl ?? "",
+  }));
+}
 
 interface ProductFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   product: Product | null;
+  categories: Category[];
+  motorcycles: Motorcycle[];
   onSaved: (product: Product, mode: "create" | "edit") => void;
 }
 
@@ -66,6 +95,8 @@ export function ProductFormDialog({
   open,
   onOpenChange,
   product,
+  categories,
+  motorcycles,
   onSaved,
 }: ProductFormDialogProps) {
   return (
@@ -75,6 +106,8 @@ export function ProductFormDialog({
           <ProductFormInner
             key={product?.id ?? "new-product"}
             product={product}
+            categories={categories}
+            motorcycles={motorcycles}
             onClose={() => onOpenChange(false)}
             onSaved={onSaved}
           />
@@ -86,10 +119,14 @@ export function ProductFormDialog({
 
 function ProductFormInner({
   product,
+  categories,
+  motorcycles,
   onClose,
   onSaved,
 }: {
   product: Product | null;
+  categories: Category[];
+  motorcycles: Motorcycle[];
   onClose: () => void;
   onSaved: (product: Product, mode: "create" | "edit") => void;
 }) {
@@ -100,7 +137,7 @@ function ProductFormInner({
   const [slug, setSlug] = React.useState(product?.slug ?? "");
   const [slugTouched, setSlugTouched] = React.useState(isEdit);
   const [category, setCategory] = React.useState<CategorySlug>(
-    product?.category ?? "led-headlights"
+    product?.category ?? categories[0]?.slug ?? "led-headlights"
   );
   const [price, setPrice] = React.useState(
     product ? String(product.price) : ""
@@ -121,6 +158,10 @@ function ProductFormInner({
   );
   const [includeBeamImage, setIncludeBeamImage] = React.useState(
     Boolean(product?.images.some((i) => i.url === BEAM_TEST_IMAGE))
+  );
+
+  const [variants, setVariants] = React.useState<VariantDraft[]>(() =>
+    toVariantDrafts(product?.variants)
   );
 
   const [shortSpecsText, setShortSpecsText] = React.useState(
@@ -167,9 +208,53 @@ function ProductFormInner({
     );
   };
 
+  const handleAddVariant = () => {
+    setVariants((prev) => [
+      ...prev,
+      {
+        id: `var-${Date.now().toString(36)}-${prev.length + 1}`,
+        name: "",
+        sku: "",
+        price: price || "",
+        colorHex: "#CA0C1F",
+        inStock: true,
+        shopeeUrl: "",
+        tiktokShopUrl: "",
+      },
+    ]);
+  };
+
+  const handleUpdateVariant = (
+    id: string,
+    patch: Partial<Omit<VariantDraft, "id">>
+  ) => {
+    setVariants((prev) =>
+      prev.map((v) => (v.id === id ? { ...v, ...patch } : v))
+    );
+  };
+
+  const handleRemoveVariant = (id: string) => {
+    setVariants((prev) => prev.filter((v) => v.id !== id));
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
+
+    const parsedVariants: ProductVariant[] = variants
+      .filter((v) => v.name.trim().length > 0)
+      .map((v) => ({
+        id: v.id,
+        name: v.name.trim(),
+        ...(v.sku.trim() ? { sku: v.sku.trim().toUpperCase() } : {}),
+        ...(v.price.trim() ? { price: Number(v.price) } : {}),
+        colorHex: v.colorHex.trim() || undefined,
+        inStock: v.inStock,
+        ...(v.shopeeUrl.trim() ? { shopeeUrl: v.shopeeUrl.trim() } : {}),
+        ...(v.tiktokShopUrl.trim()
+          ? { tiktokShopUrl: v.tiktokShopUrl.trim() }
+          : {}),
+      }));
 
     const rawPayload: ProductInput = {
       name: name.trim(),
@@ -182,19 +267,20 @@ function ProductFormInner({
       images: [
         {
           url: imageUrl.trim() || DEFAULT_PRODUCT_IMAGE,
-          alt: name.trim() || "Motorcycle accessory",
-          label: "Main",
+          alt: name.trim() || "Aksesoris motor CR7 Racing",
+          label: "Utama",
         },
         ...(includeBeamImage
           ? [
               {
                 url: BEAM_TEST_IMAGE,
-                alt: `${name.trim()} night beam cutoff test`,
-                label: "Beam Pattern" as const,
+                alt: `Uji pola cahaya malam ${name.trim()}`,
+                label: "Pola Cahaya" as const,
               },
             ]
           : []),
       ],
+      variants: parsedVariants,
       shortSpecs: parseCsvList(shortSpecsText),
       fullSpecs: parseKeyValueLines(fullSpecsText),
       inTheBox: parseNewlineList(inTheBoxText),
@@ -210,8 +296,10 @@ function ProductFormInner({
       description: description.trim(),
     };
 
-    // Reuse isomorphic validator on the client before sending network request
-    const validation = validateProductInput(rawPayload);
+    const validation = validateProductInput(
+      rawPayload,
+      categories.map((c) => c.slug)
+    );
     if (!validation.ok) {
       setError(validation.error);
       return;
@@ -226,25 +314,25 @@ function ProductFormInner({
       onSaved(saved, isEdit ? "edit" : "create");
       onClose();
     } catch (err) {
-      setError(getErrorMessage(err, "Failed to save product."));
+      setError(getErrorMessage(err, "Gagal menyimpan produk."));
       setSubmitting(false);
     }
   };
 
-  const selectedCategoryObj = CATEGORIES.find((c) => c.slug === category);
+  const selectedCategoryObj = categories.find((c) => c.slug === category);
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col max-h-[88vh]">
       <DialogHeader className="border-b border-border px-6 py-4 text-left">
         <DialogTitle className="text-lg font-bold">
           {isEdit
-            ? `Edit Accessory · ${product?.sku}`
-            : "Add New Motorcycle Accessory"}
+            ? `Edit Produk · ${product?.sku}`
+            : "Tambah Produk Aksesoris Baru"}
         </DialogTitle>
         <DialogDescription className="text-xs">
           {isEdit
-            ? "Update product specs, pricing, stock status, or Shopee / TikTok Shop links."
-            : "Insert a new product into the live CR7 MOTO catalog."}
+            ? "Perbarui detail produk, pilihan varian, foto, harga, atau link Shopee / TikTok Shop."
+            : "Tambahkan produk aksesoris motor baru ke katalog CR7 Racing."}
         </DialogDescription>
       </DialogHeader>
 
@@ -262,31 +350,31 @@ function ProductFormInner({
           </div>
         )}
 
-        {/* Section 1: Basic Info */}
+        {/* Section 1: Informasi Dasar */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="space-y-1.5 sm:col-span-2">
             <Label htmlFor="pf-name" className="text-xs font-semibold">
-              Product Name *
+              Nama Produk *
             </Label>
             <Input
               id="pf-name"
               required
               value={name}
               onChange={(e) => handleNameChange(e.target.value)}
-              placeholder="e.g., CR7 SQL 3-Eye Laser Mini Driving Light 60W"
+              placeholder="mis. CR7 Racing SQL 3 Mata Laser 60W"
             />
           </div>
 
           <div className="space-y-1.5">
             <Label htmlFor="pf-sku" className="text-xs font-semibold">
-              SKU Code *
+              Kode SKU *
             </Label>
             <Input
               id="pf-sku"
               required
               value={sku}
               onChange={(e) => setSku(e.target.value.toUpperCase())}
-              placeholder="e.g., CR7-SQL3-60W"
+              placeholder="mis. CR7-SQL3-60W"
               className="font-mono uppercase"
             />
           </div>
@@ -302,14 +390,14 @@ function ProductFormInner({
                 setSlugTouched(true);
                 setSlug(e.target.value);
               }}
-              placeholder="auto-generated-from-name"
+              placeholder="otomatis-dari-nama"
               className="font-mono text-xs"
             />
           </div>
 
           <div className="space-y-1.5">
             <Label htmlFor="pf-category" className="text-xs font-semibold">
-              Category *
+              Kategori *
             </Label>
             <Select
               value={category}
@@ -323,7 +411,7 @@ function ProductFormInner({
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                {CATEGORIES.map((c) => (
+                {categories.map((c) => (
                   <SelectItem key={c.slug} value={c.slug}>
                     {c.name}
                   </SelectItem>
@@ -335,7 +423,7 @@ function ProductFormInner({
           <div className="grid grid-cols-2 gap-2.5">
             <div className="space-y-1.5">
               <Label htmlFor="pf-price" className="text-xs font-semibold">
-                Price (IDR) *
+                Harga (IDR) *
               </Label>
               <Input
                 id="pf-price"
@@ -351,7 +439,7 @@ function ProductFormInner({
 
             <div className="space-y-1.5">
               <Label htmlFor="pf-orig-price" className="text-xs font-semibold">
-                Original Price
+                Harga Coret
               </Label>
               <Input
                 id="pf-orig-price"
@@ -371,10 +459,10 @@ function ProductFormInner({
           <div className="flex items-center justify-between gap-3">
             <div>
               <Label htmlFor="pf-instock" className="text-xs font-semibold">
-                In Stock on Stores
+                Stok Tersedia
               </Label>
               <p className="text-[11px] text-muted-foreground">
-                Show active Shopee / TikTok buy buttons
+                Tampilkan tombol beli Shopee / TikTok aktif
               </p>
             </div>
             <Switch
@@ -387,10 +475,10 @@ function ProductFormInner({
           <div className="flex items-center justify-between gap-3">
             <div>
               <Label htmlFor="pf-featured" className="text-xs font-semibold">
-                Featured on Home
+                Tampilkan di Beranda
               </Label>
               <p className="text-[11px] text-muted-foreground">
-                Display in homepage Best Sellers grid
+                Masuk daftar Aksesoris Unggulan
               </p>
             </div>
             <Switch
@@ -403,10 +491,134 @@ function ProductFormInner({
 
         <Separator />
 
-        {/* Section 2: Marketplace Links */}
+        {/* Section 2: Varian Produk */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <Layers className="size-3.5 text-primary" aria-hidden="true" />
+                <span>Varian Produk ({variants.length})</span>
+              </p>
+              <p className="text-[11px] text-muted-foreground">
+                Tambahkan varian warna, ukuran, atau paket bundling.
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleAddVariant}
+              className="h-8 gap-1 text-xs"
+            >
+              <Plus className="size-3.5" aria-hidden="true" />
+              <span>Tambah Varian</span>
+            </Button>
+          </div>
+
+          {variants.length === 0 ? (
+            <div className="rounded-lg border border-dashed border-border bg-muted/20 px-4 py-4 text-center text-xs text-muted-foreground">
+              Belum ada varian. Klik <strong>Tambah Varian</strong> untuk
+              menambahkan pilihan warna atau tipe.
+            </div>
+          ) : (
+            <div className="space-y-2.5">
+              {variants.map((v, idx) => (
+                <div
+                  key={v.id}
+                  className="rounded-lg border border-border bg-muted/25 p-3 space-y-2.5"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-mono text-[11px] font-semibold text-primary">
+                      Varian #{idx + 1}
+                    </span>
+                    <div className="flex items-center gap-3">
+                      <label className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                        <Switch
+                          size="sm"
+                          checked={v.inStock}
+                          onCheckedChange={(checked) =>
+                            handleUpdateVariant(v.id, {
+                              inStock: Boolean(checked),
+                            })
+                          }
+                        />
+                        <span>{v.inStock ? "Ready" : "Habis"}</span>
+                      </label>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-xs"
+                        onClick={() => handleRemoveVariant(v.id)}
+                        aria-label={`Hapus varian ${idx + 1}`}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="size-3.5" aria-hidden="true" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-12">
+                    <div className="sm:col-span-5">
+                      <Input
+                        value={v.name}
+                        onChange={(e) =>
+                          handleUpdateVariant(v.id, { name: e.target.value })
+                        }
+                        placeholder="Nama varian (mis. Putih - Kuning)"
+                        className="h-8 text-xs bg-card"
+                      />
+                    </div>
+                    <div className="sm:col-span-3">
+                      <Input
+                        value={v.sku}
+                        onChange={(e) =>
+                          handleUpdateVariant(v.id, {
+                            sku: e.target.value.toUpperCase(),
+                          })
+                        }
+                        placeholder="SKU Varian"
+                        className="h-8 font-mono text-xs bg-card uppercase"
+                      />
+                    </div>
+                    <div className="sm:col-span-3">
+                      <Input
+                        type="number"
+                        min={0}
+                        value={v.price}
+                        onChange={(e) =>
+                          handleUpdateVariant(v.id, { price: e.target.value })
+                        }
+                        placeholder="Harga (IDR)"
+                        className="h-8 font-mono text-xs bg-card"
+                      />
+                    </div>
+                    <div className="sm:col-span-1 flex items-center">
+                      <input
+                        type="color"
+                        value={v.colorHex || "#CA0C1F"}
+                        onChange={(e) =>
+                          handleUpdateVariant(v.id, {
+                            colorHex: e.target.value,
+                          })
+                        }
+                        title="Warna indikator varian"
+                        aria-label="Warna indikator varian"
+                        className="h-8 w-full cursor-pointer rounded border border-border bg-card p-0.5"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <Separator />
+
+        {/* Section 3: Link Marketplace */}
         <div className="space-y-3">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Outbound Marketplace Links
+            Link Toko Resmi (Shopee &amp; TikTok Shop)
           </p>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
@@ -415,7 +627,7 @@ function ProductFormInner({
                 className="flex items-center gap-1.5 text-xs font-semibold"
               >
                 <ShopeeIcon className="size-3.5 text-shopee" />
-                <span>Shopee Product URL</span>
+                <span>Link Produk Shopee</span>
               </Label>
               <Input
                 id="pf-shopee"
@@ -433,7 +645,7 @@ function ProductFormInner({
                 className="flex items-center gap-1.5 text-xs font-semibold"
               >
                 <TikTokShopIcon className="size-3.5" />
-                <span>TikTok Shop Product URL</span>
+                <span>Link Produk TikTok Shop</span>
               </Label>
               <Input
                 id="pf-tiktok"
@@ -449,54 +661,22 @@ function ProductFormInner({
 
         <Separator />
 
-        {/* Section 3: Product Image */}
+        {/* Section 4: Upload Gambar Drag & Drop */}
         <div className="space-y-3">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Product Imagery
+            Foto Produk (Drag &amp; Drop)
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 items-start">
-            <div className="relative size-20 shrink-0 overflow-hidden rounded-lg border border-border bg-muted">
-              <Image
-                src={imageUrl.startsWith("/") ? imageUrl : DEFAULT_PRODUCT_IMAGE}
-                alt="Preview"
-                fill
-                sizes="80px"
-                className="object-cover"
-              />
-            </div>
-            <div className="flex-1 w-full space-y-2">
-              <Label htmlFor="pf-image" className="text-xs font-semibold">
-                Primary Image Path
-              </Label>
-              <Input
-                id="pf-image"
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                placeholder={DEFAULT_PRODUCT_IMAGE}
-                className="font-mono text-xs"
-              />
-              <div className="flex flex-wrap gap-1.5 pt-0.5">
-                {PRODUCT_IMAGE_PRESETS.map((preset) => (
-                  <button
-                    key={preset.url}
-                    type="button"
-                    onClick={() => setImageUrl(preset.url)}
-                    className={`rounded-md border px-2 py-0.5 text-[11px] font-medium transition-colors ${
-                      imageUrl === preset.url
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border bg-muted/50 text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {preset.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
+          <ImageDropzone
+            value={imageUrl}
+            onChange={setImageUrl}
+            presets={PRODUCT_IMAGE_PRESETS}
+            label="Seret foto produk ke sini atau klik untuk unggah"
+            fallbackSrc={DEFAULT_PRODUCT_IMAGE}
+          />
 
           <div className="flex items-center justify-between rounded-md border border-border/70 px-3 py-2">
             <Label htmlFor="pf-beam" className="text-xs text-muted-foreground">
-              Attach Night Beam Cutoff Test as secondary hover/gallery image
+              Sertakan gambar Tes Pola Cahaya sebagai foto kedua saat di-hover
             </Label>
             <Switch
               id="pf-beam"
@@ -509,11 +689,11 @@ function ProductFormInner({
 
         <Separator />
 
-        {/* Section 4: Specs, Badges & Compatibility */}
+        {/* Section 5: Spesifikasi, Label & Kecocokan Motor */}
         <div className="space-y-4">
           <div className="space-y-1.5">
             <Label htmlFor="pf-short-specs" className="text-xs font-semibold">
-              Short Spec Pills (comma-separated, up to 3 shown on cards)
+              Ringkasan Spesifikasi (pisahkan dengan koma, maks. 3)
             </Label>
             <Input
               id="pf-short-specs"
@@ -525,7 +705,7 @@ function ProductFormInner({
           </div>
 
           <div className="space-y-2">
-            <Label className="text-xs font-semibold">Highlight Badges</Label>
+            <Label className="text-xs font-semibold">Label Highlight</Label>
             <div className="flex flex-wrap gap-1.5">
               {PRODUCT_BADGES.map((badge) => {
                 const active = badges.includes(badge);
@@ -548,24 +728,22 @@ function ProductFormInner({
           </div>
 
           <div className="space-y-2">
-            <Label className="text-xs font-semibold">
-              Compatible Motorcycles
-            </Label>
+            <Label className="text-xs font-semibold">Motor Kompatibel</Label>
             <div className="flex flex-wrap gap-1.5">
-              {BIKE_MODELS.map((bike) => {
-                const active = compatibility.includes(bike);
+              {motorcycles.map((moto) => {
+                const active = compatibility.includes(moto.name);
                 return (
                   <button
-                    key={bike}
+                    key={moto.id}
                     type="button"
-                    onClick={() => toggleBike(bike)}
+                    onClick={() => toggleBike(moto.name)}
                     className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
                       active
                         ? "border-primary bg-primary/15 text-primary"
                         : "border-border bg-muted/40 text-muted-foreground hover:text-foreground"
                     }`}
                   >
-                    {bike}
+                    {moto.name}
                   </button>
                 );
               })}
@@ -574,21 +752,21 @@ function ProductFormInner({
 
           <div className="space-y-1.5">
             <Label htmlFor="pf-desc" className="text-xs font-semibold">
-              Product Description
+              Deskripsi Produk
             </Label>
             <Textarea
               id="pf-desc"
               rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe optics, materials, and key riding benefits..."
+              placeholder="Jelaskan keunggulan cahaya, material CNC, dan manfaat produk..."
             />
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label htmlFor="pf-specs" className="text-xs font-semibold">
-                Technical Specs (`Key: Value` per line)
+                Spesifikasi Teknis (`Nama: Nilai` per baris)
               </Label>
               <Textarea
                 id="pf-specs"
@@ -596,7 +774,7 @@ function ProductFormInner({
                 value={fullSpecsText}
                 onChange={(e) => setFullSpecsText(e.target.value)}
                 placeholder={
-                  "Power Output: 60W\nInput Voltage: DC 12V-24V\nWaterproof: IP67"
+                  "Daya Output: 60W\nTegangan Input: DC 12V-24V\nKetahanan Air: IP67"
                 }
                 className="font-mono text-xs"
               />
@@ -604,7 +782,7 @@ function ProductFormInner({
 
             <div className="space-y-1.5">
               <Label htmlFor="pf-box" className="text-xs font-semibold">
-                In the Box (one item per line)
+                Isi Paket (1 item per baris)
               </Label>
               <Textarea
                 id="pf-box"
@@ -612,7 +790,7 @@ function ProductFormInner({
                 value={inTheBoxText}
                 onChange={(e) => setInTheBoxText(e.target.value)}
                 placeholder={
-                  "1x CR7 Mini Driving Light\n1x Stainless U-Bracket\n1x Warranty Card"
+                  "1x Lampu Tembak CR7 Racing\n1x Breket U Stainless\n1x Kartu Garansi"
                 }
                 className="text-xs"
               />
@@ -621,14 +799,14 @@ function ProductFormInner({
 
           <div className="space-y-1.5">
             <Label htmlFor="pf-fitment" className="text-xs font-semibold">
-              Fitment &amp; Installation Notes
+              Catatan Pemasangan &amp; Kecocokan
             </Label>
             <Textarea
               id="pf-fitment"
               rows={2}
               value={fitmentNotes}
               onChange={(e) => setFitmentNotes(e.target.value)}
-              placeholder="e.g., Requires DC 12V wiring; recommended to pair with CR7 40A Relay Harness."
+              placeholder="mis. Wajib arus DC 12V, disarankan memakai Relay Set 40A."
             />
           </div>
         </div>
@@ -641,23 +819,23 @@ function ProductFormInner({
           onClick={onClose}
           disabled={submitting}
         >
-          Cancel
+          Batal
         </Button>
         <Button type="submit" disabled={submitting} className="gap-1.5">
           {submitting ? (
             <>
               <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-              <span>Saving...</span>
+              <span>Menyimpan...</span>
             </>
           ) : isEdit ? (
             <>
               <Save className="size-4" aria-hidden="true" />
-              <span>Save Changes</span>
+              <span>Simpan Perubahan</span>
             </>
           ) : (
             <>
               <Plus className="size-4" aria-hidden="true" />
-              <span>Insert Product</span>
+              <span>Tambah Produk</span>
             </>
           )}
         </Button>

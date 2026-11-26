@@ -45,7 +45,9 @@ export function AdminLoginForm() {
       router.replace("/admin");
       router.refresh();
     } catch (err) {
-      setError(getErrorMessage(err, "Invalid credentials. Please try again."));
+      setError(
+        getErrorMessage(err, "Username atau password salah. Silakan coba lagi.")
+      );
       setLoading(false);
     }
   };
@@ -67,8 +69,8 @@ export function AdminLoginForm() {
           <BrandLogo
             href={null}
             size="lg"
-            badge="Admin Console"
-            subtitle="Restricted catalog management access"
+            badge="Admin"
+            subtitle="Panel pengelolaan katalog CR7 Racing"
           />
         </div>
 
@@ -76,11 +78,11 @@ export function AdminLoginForm() {
           <CardHeader className="p-6 pb-4 space-y-1">
             <CardTitle className="flex items-center gap-2 text-lg font-bold">
               <Lock className="size-4 text-primary" aria-hidden="true" />
-              <span>Sign In</span>
+              <span>Masuk Admin</span>
             </CardTitle>
             <CardDescription className="text-xs">
-              Enter your administrator credentials to insert, edit, or delete
-              motorcycle accessories.
+              Masukkan akun administrator untuk mengelola katalog produk,
+              kategori, motor, dan konten beranda.
             </CardDescription>
           </CardHeader>
 
@@ -111,7 +113,7 @@ export function AdminLoginForm() {
                   required
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Enter admin username"
+                  placeholder="Masukkan username admin"
                   disabled={loading}
                   className="h-10"
                 />
@@ -130,14 +132,16 @@ export function AdminLoginForm() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter admin password"
+                    placeholder="Masukkan password admin"
                     disabled={loading}
                     className="h-10 pr-10"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword((prev) => !prev)}
-                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-label={
+                      showPassword ? "Sembunyikan password" : "Tampilkan password"
+                    }
                     className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     {showPassword ? (
@@ -160,10 +164,10 @@ export function AdminLoginForm() {
                       className="size-4 animate-spin"
                       aria-hidden="true"
                     />
-                    <span>Signing in...</span>
+                    <span>Memproses...</span>
                   </>
                 ) : (
-                  <span>Sign In to Catalog Admin</span>
+                  <span>Masuk ke Dashboard Admin</span>
                 )}
               </Button>
             </CardContent>
@@ -175,14 +179,14 @@ export function AdminLoginForm() {
                 className="size-3.5 text-status-success"
                 aria-hidden="true"
               />
-              HttpOnly Signed Session
+              Sesi Terenkripsi HttpOnly
             </span>
             <Link
               href="/"
               className="inline-flex items-center gap-1 font-medium text-foreground hover:text-primary transition-colors"
             >
               <ArrowLeft className="size-3.5" aria-hidden="true" />
-              <span>Storefront</span>
+              <span>Kembali ke Toko</span>
             </Link>
           </CardFooter>
         </Card>

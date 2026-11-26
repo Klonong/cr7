@@ -20,7 +20,7 @@ export function ThemeToggle({
   className,
 }: ThemeToggleProps) {
   const { theme, toggleTheme } = useTheme();
-  const label = `Switch to ${theme === "dark" ? "light" : "dark"} mode`;
+  const label = `Ganti ke mode ${theme === "dark" ? "terang" : "gelap"}`;
 
   const button = (
     <Button

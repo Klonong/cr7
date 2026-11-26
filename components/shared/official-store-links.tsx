@@ -11,6 +11,7 @@ interface OfficialStoreLinksProps {
   layout?: "inline" | "stack" | "hero";
   shopeeLabel?: string;
   tiktokLabel?: string;
+  onPrimary?: boolean;
   className?: string;
 }
 
@@ -18,6 +19,7 @@ export function OfficialStoreLinks({
   layout = "inline",
   shopeeLabel,
   tiktokLabel,
+  onPrimary = false,
   className,
 }: OfficialStoreLinksProps) {
   const isStack = layout === "stack";
@@ -26,14 +28,14 @@ export function OfficialStoreLinks({
   const resolvedShopee =
     shopeeLabel ??
     (isStack
-      ? "Official Shopee Store"
+      ? "Toko Resmi Shopee"
       : isHero
-        ? "Shopee Store"
+        ? "Toko Shopee"
         : "Shopee");
   const resolvedTikTok =
     tiktokLabel ??
     (isStack
-      ? "Official TikTok Shop"
+      ? "Toko Resmi TikTok Shop"
       : isHero
         ? "TikTok Shop"
         : "TikTok");
@@ -55,10 +57,12 @@ export function OfficialStoreLinks({
         href={STORE_CONFIG.officialShopeeUrl}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Open Official CR7 Moto Shopee Store (opens in a new tab)"
+        aria-label="Buka Toko Resmi Shopee CR7 Racing (buka di tab baru)"
         className={cn(
           buttonVariants({ variant: "default" }),
-          "gap-1.5 bg-shopee text-shopee-foreground hover:bg-shopee-hover",
+          onPrimary
+            ? "gap-1.5 bg-secondary text-shopee hover:bg-secondary/90 shadow-xs"
+            : "gap-1.5 bg-shopee text-shopee-foreground hover:bg-shopee-hover",
           baseHeight
         )}
       >
@@ -66,17 +70,22 @@ export function OfficialStoreLinks({
           <ShopeeIcon className="size-4 shrink-0" />
           <span>{resolvedShopee}</span>
         </span>
-        <ExternalLink className="size-3.5 shrink-0 opacity-85" aria-hidden="true" />
+        <ExternalLink
+          className="size-3.5 shrink-0 opacity-85"
+          aria-hidden="true"
+        />
       </a>
 
       <a
         href={STORE_CONFIG.officialTikTokShopUrl}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Open Official CR7 Moto TikTok Shop (opens in a new tab)"
+        aria-label="Buka Toko Resmi TikTok Shop CR7 Racing (buka di tab baru)"
         className={cn(
           buttonVariants({ variant: "default" }),
-          "gap-1.5 bg-tiktok text-tiktok-foreground hover:bg-tiktok-hover dark:border dark:border-zinc-700",
+          onPrimary
+            ? "gap-1.5 bg-[#0f0f0f] text-secondary hover:bg-[#262626] border border-white/20 shadow-xs"
+            : "gap-1.5 bg-tiktok text-tiktok-foreground hover:bg-tiktok-hover border border-white/20 dark:border-zinc-700",
           baseHeight
         )}
       >
@@ -84,7 +93,10 @@ export function OfficialStoreLinks({
           <TikTokShopIcon className="size-4 shrink-0" />
           <span>{resolvedTikTok}</span>
         </span>
-        <ExternalLink className="size-3.5 shrink-0 opacity-85" aria-hidden="true" />
+        <ExternalLink
+          className="size-3.5 shrink-0 opacity-85"
+          aria-hidden="true"
+        />
       </a>
     </div>
   );

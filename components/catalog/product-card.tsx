@@ -17,7 +17,7 @@ import { MarketplaceCta } from "@/components/catalog/marketplace-cta";
 import { formatPrice, getDiscountPercent } from "@/lib/format";
 import { getCategoryBySlug } from "@/data/categories";
 import { cn } from "@/lib/utils";
-import type { Product } from "@/data/products";
+import type { Product } from "@/types/catalog";
 
 interface ProductCardProps {
   product: Product;
@@ -35,6 +35,7 @@ export function ProductCard({
   const discount = getDiscountPercent(product.price, product.originalPrice);
   const primaryImage = product.images[0];
   const secondaryImage = product.images[1];
+  const variants = product.variants ?? [];
 
   return (
     <Card
@@ -52,7 +53,7 @@ export function ProductCard({
         <Link
           href={`/products/${product.slug}`}
           className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
-          aria-label={`Inspect ${product.name}`}
+          aria-label={`Lihat detail ${product.name}`}
         >
           <AspectRatio ratio={1}>
             <Image
@@ -80,7 +81,7 @@ export function ProductCard({
               variant="destructive"
               className="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide shadow-xs"
             >
-              Sold Out
+              Stok Habis
             </Badge>
           ) : (
             product.badges?.slice(0, 1).map((badge) => (
@@ -88,7 +89,7 @@ export function ProductCard({
                 key={badge}
                 className={cn(
                   "rounded-full px-2 py-0.5 text-[10px] font-semibold shadow-xs",
-                  badge === "Best Seller"
+                  badge === "Terlaris"
                     ? "bg-primary text-primary-foreground"
                     : "bg-background/90 text-foreground border border-border backdrop-blur-xs"
                 )}
@@ -115,14 +116,14 @@ export function ProductCard({
                     variant="secondary"
                     size="icon"
                     onClick={() => onQuickView(product)}
-                    aria-label={`Quick view ${product.name}`}
+                    aria-label={`Lihat cepat ${product.name}`}
                     className="size-8 rounded-full bg-background/90 text-foreground shadow-xs border border-border backdrop-blur-xs hover:bg-background"
                   />
                 }
               >
                 <Eye className="size-3.5" aria-hidden="true" />
               </TooltipTrigger>
-              <TooltipContent side="left">Quick View</TooltipContent>
+              <TooltipContent side="left">Lihat Cepat</TooltipContent>
             </Tooltip>
           </div>
         )}
@@ -131,7 +132,7 @@ export function ProductCard({
         {secondaryImage && (
           <div className="pointer-events-none absolute bottom-2 left-2.5 z-10 hidden sm:inline-flex items-center gap-1 rounded-md bg-background/85 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground border border-border/80 backdrop-blur-xs">
             <Sparkles className="size-2.5 text-primary" aria-hidden="true" />
-            <span>Hover for {secondaryImage.label ?? "Beam"}</span>
+            <span>Arahkan untuk {secondaryImage.label ?? "Sorot"}</span>
           </div>
         )}
       </div>
@@ -171,9 +172,28 @@ export function ProductCard({
             ))}
           </div>
 
+          {/* Variant Swatch Indicator */}
+          {variants.length > 0 && (
+            <div className="flex items-center gap-1.5 pt-0.5">
+              <div className="flex items-center -space-x-1">
+                {variants.slice(0, 4).map((v) => (
+                  <span
+                    key={v.id}
+                    title={v.name}
+                    className="inline-block size-3.5 rounded-full border border-border shadow-2xs"
+                    style={{ backgroundColor: v.colorHex || "#18181b" }}
+                  />
+                ))}
+              </div>
+              <span className="text-[11px] font-medium text-muted-foreground">
+                {variants.length} Pilihan Varian
+              </span>
+            </div>
+          )}
+
           {/* Compatibility */}
           <p className="truncate text-xs text-muted-foreground">
-            <span className="font-medium text-foreground/80">Fits:</span>{" "}
+            <span className="font-medium text-foreground/80">Cocok:</span>{" "}
             {product.compatibility.join(" · ")}
           </p>
         </div>

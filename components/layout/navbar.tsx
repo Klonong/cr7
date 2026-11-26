@@ -4,11 +4,10 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetDescription,
   SheetHeader,
@@ -20,40 +19,53 @@ import { BrandLogo } from "@/components/shared/brand-logo";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { OfficialStoreLinks } from "@/components/shared/official-store-links";
 import { PRIMARY_NAV_LINKS } from "@/config/store";
-import { CATEGORIES } from "@/data/categories";
+import { CATEGORIES as FALLBACK_CATEGORIES } from "@/data/categories";
+import { fetchPublicCategories } from "@/lib/api/category-api";
 import { cn } from "@/lib/utils";
+import type { Category } from "@/types/catalog";
 
 export function Navbar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [categories, setCategories] =
+    React.useState<Category[]>(FALLBACK_CATEGORIES);
+
+  const handleMobileOpenChange = (open: boolean) => {
+    setMobileOpen(open);
+    if (open) {
+      fetchPublicCategories()
+        .then((list) => setCategories(list))
+        .catch(() => {});
+    }
+  };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border bg-background/85 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-[1320px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-40 w-full border-b border-white/15 bg-[#000000] text-[#fefefe] shadow-sm">
+      <div className="mx-auto flex min-h-20 max-w-[1320px] items-center justify-between gap-4 px-4 py-3 sm:px-6 sm:py-3.5 lg:px-8">
         {/* Brand Logo */}
         <BrandLogo
           href="/"
-          badge="Catalog"
-          subtitle="Motorcycle Parts & Accessories"
+          onDark
         />
 
         {/* Center Desktop Navigation */}
         <nav
-          aria-label="Primary catalog navigation"
+          aria-label="Navigasi katalog utama"
           className="hidden lg:flex items-center gap-1"
         >
           {PRIMARY_NAV_LINKS.map((item) => {
             const isActive =
-              item.href === "/products" && pathname === "/products";
+              (item.href === "/products" && pathname === "/products") ||
+              (item.href === "/about" && pathname === "/about");
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  "rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-white/10 hover:text-[#fefefe] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
                   isActive
-                    ? "text-foreground bg-muted/70"
-                    : "text-muted-foreground"
+                    ? "bg-primary text-[#fefefe] font-semibold"
+                    : "text-zinc-300"
                 )}
               >
                 {item.label}
@@ -64,24 +76,24 @@ export function Navbar() {
 
         {/* Right Utilities — Search, Official Store Links, Theme Toggle (NO Cart or Admin Login) */}
         <div className="flex items-center gap-2">
-          <CommandSearch />
+          <CommandSearch onPrimary />
 
-          <OfficialStoreLinks layout="inline" className="hidden xl:flex pl-1" />
+          <OfficialStoreLinks
+            layout="inline"
+            className="hidden xl:flex pl-1"
+          />
 
-          <ThemeToggle />
+          <ThemeToggle className="text-[#fefefe] hover:bg-white/10 hover:text-[#fefefe]" />
 
           {/* Mobile Menu Drawer */}
-          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+          <Sheet open={mobileOpen} onOpenChange={handleMobileOpenChange}>
             <SheetTrigger
-              render={
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  aria-label="Open navigation menu"
-                  className="size-9 min-h-[44px] min-w-[44px] lg:hidden"
-                />
-              }
+              type="button"
+              aria-label="Buka menu navigasi"
+              className={cn(
+                buttonVariants({ variant: "outline", size: "icon" }),
+                "size-9 min-h-[44px] min-w-[44px] border-white/20 bg-white/10 text-[#fefefe] hover:bg-white/20 hover:text-[#fefefe] lg:hidden"
+              )}
             >
               <Menu className="size-5" aria-hidden="true" />
             </SheetTrigger>
@@ -91,38 +103,39 @@ export function Navbar() {
                   <BrandLogo href={null} size="sm" />
                 </SheetTitle>
                 <SheetDescription>
-                  Browse accessories and order directly via our official Shopee
-                  or TikTok Shop stores.
+                  Jelajahi katalog aksesoris motor dan order langsung di toko
+                  resmi Shopee atau TikTok Shop.
                 </SheetDescription>
               </SheetHeader>
 
               <div className="flex flex-col gap-4 px-4 pb-6 overflow-y-auto">
                 <div className="space-y-1">
                   <p className="px-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    Catalog Categories
+                    Menu &amp; Kategori
                   </p>
-                  <SheetClose
-                    render={
-                      <Link
-                        href="/products"
-                        className="flex min-h-[44px] items-center rounded-md px-2.5 text-sm font-medium text-foreground hover:bg-muted"
-                      />
-                    }
+                  <Link
+                    href="/products"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex min-h-[44px] items-center rounded-md px-2.5 text-sm font-medium text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    All Motorcycle Accessories
-                  </SheetClose>
-                  {CATEGORIES.map((category) => (
-                    <SheetClose
+                    Semua Aksesoris Motor
+                  </Link>
+                  <Link
+                    href="/about"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex min-h-[44px] items-center rounded-md px-2.5 text-sm font-medium text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    Tentang Kami &amp; YouTube
+                  </Link>
+                  {categories.map((category) => (
+                    <Link
                       key={category.slug}
-                      render={
-                        <Link
-                          href={`/products?category=${category.slug}`}
-                          className="flex min-h-[44px] items-center rounded-md px-2.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
-                        />
-                      }
+                      href={`/products?category=${category.slug}`}
+                      onClick={() => setMobileOpen(false)}
+                      className="flex min-h-[44px] items-center rounded-md px-2.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       {category.name}
-                    </SheetClose>
+                    </Link>
                   ))}
                 </div>
 
@@ -130,7 +143,7 @@ export function Navbar() {
 
                 <div className="space-y-2">
                   <p className="px-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    Official Storefronts
+                    Toko Resmi Kami
                   </p>
                   <OfficialStoreLinks layout="stack" />
                 </div>

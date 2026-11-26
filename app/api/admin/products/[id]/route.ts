@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAdminApiSession } from "@/lib/server/admin-auth";
 import { catalogRepository } from "@/lib/server/catalog-repository";
 import { revalidateCatalog } from "@/lib/server/catalog-service";
+import { categoryRepository } from "@/lib/server/category-repository";
 import { validateProductInput } from "@/lib/validation/product";
 
 export async function PUT(
@@ -14,7 +15,11 @@ export async function PUT(
   try {
     const { id } = await context.params;
     const body = await request.json();
-    const validated = validateProductInput(body);
+    const categories = await categoryRepository.findAll();
+    const validated = validateProductInput(
+      body,
+      categories.map((c) => c.slug)
+    );
     if (!validated.ok) {
       return NextResponse.json({ error: validated.error }, { status: 400 });
     }

@@ -5,7 +5,7 @@ import { getAdminSession } from "@/lib/server/admin-auth";
 import { AdminLoginForm } from "@/components/admin/admin-login-form";
 
 export const metadata: Metadata = {
-  title: "Admin Login",
+  title: "Login Admin CR7 Racing",
   robots: {
     index: false,
     follow: false,
@@ -25,7 +25,7 @@ export default function AdminLoginPage() {
     <Suspense
       fallback={
         <div className="flex min-h-screen items-center justify-center bg-background text-sm text-muted-foreground">
-          Loading admin console...
+          Memuat Konsol Admin...
         </div>
       }
     >
