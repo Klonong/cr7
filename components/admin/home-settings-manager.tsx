@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import Image from "next/image";
 import {
   CheckCircle2,
@@ -11,7 +10,6 @@ import {
   Save,
   Sparkles,
   Trash2,
-  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,18 +39,14 @@ import {
 } from "@/components/ui/alert-dialog";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { AdminHeader } from "@/components/admin/admin-header";
+import { AdminFeedbackBanner } from "@/components/admin/admin-feedback-banner";
 import { HighlightFormDialog } from "@/components/admin/highlight-form-dialog";
 import { ImageDropzone } from "@/components/admin/image-dropzone";
 import { HERO_IMAGE_PRESETS } from "@/data/home-defaults";
-import { useAdminHome } from "@/hooks/use-admin-home";
+import { useAdminHome } from "@/hooks/admin/use-admin-home";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/types/catalog";
-import type {
-  HomeContent,
-  HomeHighlight,
-  HomeTrustPillar,
-  TrustIconName,
-} from "@/types/home";
+import type { HomeContent, TrustIconName } from "@/types/home";
 
 const TRUST_ICON_OPTIONS: { value: TrustIconName; label: string }[] = [
   { value: "shield", label: "Perisai (Original)" },
@@ -74,74 +68,9 @@ export function HomeSettingsManager({
   products,
   username,
 }: HomeSettingsManagerProps) {
-  const home = useAdminHome(initialContent);
-
-  const [hero, setHero] = React.useState(initialContent.hero);
-  const [sections, setSections] = React.useState(initialContent.sections);
-  const [trustPillars, setTrustPillars] = React.useState<HomeTrustPillar[]>(
-    initialContent.trustPillars
-  );
-
-  const [highlightDialogOpen, setHighlightDialogOpen] = React.useState(false);
-  const [editingHighlight, setEditingHighlight] =
-    React.useState<HomeHighlight | null>(null);
-  const [deletingHighlight, setDeletingHighlight] =
-    React.useState<HomeHighlight | null>(null);
-
-  const handleOpenCreateHighlight = () => {
-    setEditingHighlight(null);
-    setHighlightDialogOpen(true);
-  };
-
-  const handleOpenEditHighlight = (hl: HomeHighlight) => {
-    setEditingHighlight(hl);
-    setHighlightDialogOpen(true);
-  };
-
-  const handleConfirmDeleteHighlight = async () => {
-    if (!deletingHighlight) return;
-    await home.removeHighlight(deletingHighlight);
-    setDeletingHighlight(null);
-  };
-
-  const handleSaveSettings = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    await home.updateSettings({ hero, sections, trustPillars });
-  };
-
-  const handlePickSpotlightProduct = (slug: string | null) => {
-    if (!slug) return;
-    const found = products.find((p) => p.slug === slug);
-    if (!found) return;
-    setHero((prev) => ({
-      ...prev,
-      spotlightProductSlug: found.slug,
-      spotlightTag: `Produk Unggulan · ${found.sku}`,
-      spotlightTitle: found.name,
-    }));
-  };
-
-  const updatePillar = (
-    id: string,
-    patch: Partial<Omit<HomeTrustPillar, "id">>
-  ) => {
-    setTrustPillars((prev) =>
-      prev.map((pillar) =>
-        pillar.id === id ? { ...pillar, ...patch } : pillar
-      )
-    );
-  };
-
-  const visibleSectionsCount = [
-    sections.showTrustStrip,
-    sections.showBikeFitmentStrip,
-    sections.showCategoriesGrid,
-    sections.showHighlights,
-  ].filter(Boolean).length;
-
-  const selectedSpotlightProduct = products.find(
-    (p) => p.slug === hero.spotlightProductSlug
-  );
+  const home = useAdminHome(initialContent, products);
+  const { hero, setHero, sections, setSections, trustPillars, updatePillar } =
+    home;
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -165,7 +94,7 @@ export function HomeSettingsManager({
 
           <Button
             type="button"
-            onClick={handleOpenCreateHighlight}
+            onClick={home.openCreateHighlight}
             className="h-11 min-h-[44px] gap-2 px-5 font-semibold self-start sm:self-auto"
           >
             <Plus className="size-4" aria-hidden="true" />
@@ -198,7 +127,7 @@ export function HomeSettingsManager({
               Bagian Aktif
             </p>
             <p className="font-mono text-2xl font-extrabold tabular-nums text-foreground">
-              {visibleSectionsCount} / 4
+              {home.visibleSectionsCount} / 4
             </p>
           </Card>
 
@@ -212,31 +141,10 @@ export function HomeSettingsManager({
           </Card>
         </div>
 
-        {/* Live Feedback Banner */}
-        {home.feedback && (
-          <div
-            role="status"
-            className={cn(
-              "flex items-center justify-between gap-3 rounded-lg border px-4 py-3 text-sm font-medium",
-              home.feedback.type === "success"
-                ? "border-status-success/30 bg-status-success/10 text-status-success"
-                : "border-destructive/30 bg-destructive/10 text-destructive"
-            )}
-          >
-            <span className="inline-flex items-center gap-2">
-              <CheckCircle2 className="size-4 shrink-0" aria-hidden="true" />
-              <span>{home.feedback.message}</span>
-            </span>
-            <button
-              type="button"
-              onClick={home.clearFeedback}
-              aria-label="Tutup notifikasi"
-              className="rounded p-1 hover:bg-black/5 dark:hover:bg-white/10"
-            >
-              <X className="size-4" aria-hidden="true" />
-            </button>
-          </div>
-        )}
+        <AdminFeedbackBanner
+          feedback={home.feedback}
+          onDismiss={home.clearFeedback}
+        />
 
         {/* Main Tabbed Workspace */}
         <Tabs defaultValue="highlights" className="space-y-6">
@@ -268,7 +176,7 @@ export function HomeSettingsManager({
                 </p>
                 <Button
                   type="button"
-                  onClick={handleOpenCreateHighlight}
+                  onClick={home.openCreateHighlight}
                   className="mt-5 gap-1.5"
                 >
                   <Plus className="size-4" aria-hidden="true" />
@@ -377,7 +285,7 @@ export function HomeSettingsManager({
                           type="button"
                           variant="outline"
                           size="sm"
-                          onClick={() => handleOpenEditHighlight(hl)}
+                          onClick={() => home.openEditHighlight(hl)}
                           className="h-8 gap-1.5 px-3 text-xs"
                         >
                           <Pencil className="size-3" aria-hidden="true" />
@@ -387,7 +295,7 @@ export function HomeSettingsManager({
                           type="button"
                           variant="ghost"
                           size="icon-sm"
-                          onClick={() => setDeletingHighlight(hl)}
+                          onClick={() => home.setDeletingHighlight(hl)}
                           aria-label={`Hapus ${hl.title}`}
                           className="text-destructive hover:text-destructive hover:bg-destructive/10"
                         >
@@ -403,7 +311,7 @@ export function HomeSettingsManager({
 
           {/* TAB 2: Hero Banner & Flagship Spotlight */}
           <TabsContent value="hero">
-            <form onSubmit={handleSaveSettings}>
+            <form onSubmit={home.handleSaveSettings}>
               <Card className="rounded-xl border border-border bg-card p-6 ring-0 space-y-6">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-border pb-4">
                   <div>
@@ -584,12 +492,12 @@ export function HomeSettingsManager({
                       </Label>
                       <Select
                         value={hero.spotlightProductSlug}
-                        onValueChange={handlePickSpotlightProduct}
+                        onValueChange={home.handlePickSpotlightProduct}
                       >
                         <SelectTrigger className="w-full h-10">
                           <SelectValue>
-                            {selectedSpotlightProduct
-                              ? `${selectedSpotlightProduct.sku} · ${selectedSpotlightProduct.name}`
+                            {home.selectedSpotlightProduct
+                              ? `${home.selectedSpotlightProduct.sku} · ${home.selectedSpotlightProduct.name}`
                               : "Pilih produk dari katalog"}
                           </SelectValue>
                         </SelectTrigger>
@@ -650,7 +558,7 @@ export function HomeSettingsManager({
 
           {/* TAB 3: Sections Visibility & Trust Strip */}
           <TabsContent value="sections">
-            <form onSubmit={handleSaveSettings} className="space-y-6">
+            <form onSubmit={home.handleSaveSettings} className="space-y-6">
               <Card className="rounded-xl border border-border bg-card p-6 ring-0 space-y-5">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-border pb-4">
                   <div>
@@ -930,17 +838,17 @@ export function HomeSettingsManager({
 
       {/* Create / Edit Highlight Dialog */}
       <HighlightFormDialog
-        open={highlightDialogOpen}
-        onOpenChange={setHighlightDialogOpen}
-        highlight={editingHighlight}
+        open={home.highlightDialogOpen}
+        onOpenChange={home.setHighlightDialogOpen}
+        highlight={home.editingHighlight}
         onSaved={home.applySavedHighlight}
       />
 
       {/* Delete Highlight Confirmation */}
       <AlertDialog
-        open={Boolean(deletingHighlight)}
+        open={Boolean(home.deletingHighlight)}
         onOpenChange={(open) => {
-          if (!open) setDeletingHighlight(null);
+          if (!open) home.setDeletingHighlight(null);
         }}
       >
         <AlertDialogContent>
@@ -949,7 +857,7 @@ export function HomeSettingsManager({
             <AlertDialogDescription>
               Sorotan{" "}
               <strong className="text-foreground">
-                {deletingHighlight?.title}
+                {home.deletingHighlight?.title}
               </strong>{" "}
               akan dihapus dari carousel beranda.
             </AlertDialogDescription>
@@ -958,7 +866,7 @@ export function HomeSettingsManager({
             <AlertDialogCancel disabled={home.deleting}>Batal</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
-              onClick={handleConfirmDeleteHighlight}
+              onClick={home.confirmDeleteHighlight}
               disabled={home.deleting}
             >
               {home.deleting ? "Menghapus..." : "Hapus Sorotan"}

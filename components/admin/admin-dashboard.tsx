@@ -1,18 +1,16 @@
 "use client";
 
-import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
-  CheckCircle2,
   ExternalLink,
   Package,
   Pencil,
   Plus,
+  RotateCcw,
   Search,
   Star,
   Trash2,
-  X,
 } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,12 +47,18 @@ import {
   TikTokShopIcon,
 } from "@/components/icons/marketplace-icons";
 import { AdminHeader } from "@/components/admin/admin-header";
+import { AdminFeedbackBanner } from "@/components/admin/admin-feedback-banner";
 import { ProductFormDialog } from "@/components/admin/product-form-dialog";
 import { DEFAULT_PRODUCT_IMAGE } from "@/config/store";
-import { useAdminCatalog } from "@/hooks/use-admin-catalog";
+import { useAdminCatalog } from "@/hooks/admin/use-admin-catalog";
 import { formatPrice } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import type { Category, CategorySlug, Motorcycle, Product } from "@/types/catalog";
+import type {
+  Category,
+  CategorySlug,
+  Motorcycle,
+  Product,
+} from "@/types/catalog";
 
 interface AdminDashboardProps {
   initialProducts: Product[];
@@ -69,40 +73,7 @@ export function AdminDashboard({
   motorcycles,
   username,
 }: AdminDashboardProps) {
-  const catalog = useAdminCatalog(initialProducts);
-
-  const [formOpen, setFormOpen] = React.useState(false);
-  const [editingProduct, setEditingProduct] = React.useState<Product | null>(
-    null
-  );
-  const [deletingProduct, setDeletingProduct] = React.useState<Product | null>(
-    null
-  );
-
-  const handleOpenCreate = () => {
-    setEditingProduct(null);
-    setFormOpen(true);
-  };
-
-  const handleOpenEdit = (product: Product) => {
-    setEditingProduct(product);
-    setFormOpen(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!deletingProduct) return;
-    await catalog.removeProduct(deletingProduct);
-    setDeletingProduct(null);
-  };
-
-  const findCategory = (slug: string) =>
-    categories.find((c) => c.slug === slug);
-
-  const selectedCategoryLabel =
-    catalog.categoryFilter === "all"
-      ? "Semua Kategori"
-      : (findCategory(catalog.categoryFilter)?.shortName ??
-        catalog.categoryFilter);
+  const catalog = useAdminCatalog(initialProducts, categories);
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -116,7 +87,7 @@ export function AdminDashboard({
               Manajemen Katalog
             </p>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-              Daftar Produk Aksesoris Motor
+              Daftar Produk Aksesori Motor
             </h1>
             <p className="text-sm text-muted-foreground">
               Tambah, edit varian &amp; foto, ubah status stok, atau hapus
@@ -126,7 +97,7 @@ export function AdminDashboard({
 
           <Button
             type="button"
-            onClick={handleOpenCreate}
+            onClick={catalog.openCreateForm}
             className="h-11 min-h-[44px] gap-2 px-5 font-semibold self-start sm:self-auto"
           >
             <Plus className="size-4" aria-hidden="true" />
@@ -180,31 +151,10 @@ export function AdminDashboard({
           </Card>
         </div>
 
-        {/* Live Feedback Banner */}
-        {catalog.feedback && (
-          <div
-            role="status"
-            className={cn(
-              "flex items-center justify-between gap-3 rounded-lg border px-4 py-3 text-sm font-medium",
-              catalog.feedback.type === "success"
-                ? "border-status-success/30 bg-status-success/10 text-status-success"
-                : "border-destructive/30 bg-destructive/10 text-destructive"
-            )}
-          >
-            <span className="inline-flex items-center gap-2">
-              <CheckCircle2 className="size-4 shrink-0" aria-hidden="true" />
-              <span>{catalog.feedback.message}</span>
-            </span>
-            <button
-              type="button"
-              onClick={catalog.clearFeedback}
-              aria-label="Tutup notifikasi"
-              className="rounded p-1 hover:bg-black/5 dark:hover:bg-white/10"
-            >
-              <X className="size-4" aria-hidden="true" />
-            </button>
-          </div>
-        )}
+        <AdminFeedbackBanner
+          feedback={catalog.feedback}
+          onDismiss={catalog.clearFeedback}
+        />
 
         {/* Filter Toolbar */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -230,7 +180,7 @@ export function AdminDashboard({
               }}
             >
               <SelectTrigger className="h-10 w-[170px] bg-card">
-                <SelectValue>{selectedCategoryLabel}</SelectValue>
+                <SelectValue>{catalog.selectedCategoryLabel}</SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Semua Kategori</SelectItem>
@@ -286,20 +236,32 @@ export function AdminDashboard({
                 <TableRow>
                   <TableCell
                     colSpan={6}
-                    className="h-32 text-center text-sm text-muted-foreground"
+                    className="h-40 text-center text-sm text-muted-foreground"
                   >
-                    <div className="flex flex-col items-center justify-center gap-2">
+                    <div className="flex flex-col items-center justify-center gap-2.5">
                       <Package
                         className="size-6 opacity-50"
                         aria-hidden="true"
                       />
                       <span>Tidak ada produk yang cocok dengan filter.</span>
+                      {catalog.hasActiveFilters && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={catalog.clearFilters}
+                          className="gap-1.5"
+                        >
+                          <RotateCcw className="size-3.5" aria-hidden="true" />
+                          <span>Reset Filter</span>
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
               ) : (
                 catalog.filteredProducts.map((product) => {
-                  const category = findCategory(product.category);
+                  const category = catalog.findCategory(product.category);
                   const variantCount = product.variants?.length ?? 0;
                   return (
                     <TableRow key={product.id}>
@@ -344,7 +306,10 @@ export function AdminDashboard({
                             {category?.shortName ?? product.category}
                           </Badge>
                           {variantCount > 0 && (
-                            <Badge variant="outline" className="font-mono text-[10px]">
+                            <Badge
+                              variant="outline"
+                              className="font-mono text-[10px]"
+                            >
                               {variantCount} varian
                             </Badge>
                           )}
@@ -446,7 +411,7 @@ export function AdminDashboard({
                             type="button"
                             variant="ghost"
                             size="icon-sm"
-                            onClick={() => handleOpenEdit(product)}
+                            onClick={() => catalog.openEditForm(product)}
                             aria-label={`Edit ${product.name}`}
                           >
                             <Pencil className="size-3.5" aria-hidden="true" />
@@ -455,7 +420,7 @@ export function AdminDashboard({
                             type="button"
                             variant="ghost"
                             size="icon-sm"
-                            onClick={() => setDeletingProduct(product)}
+                            onClick={() => catalog.setDeletingProduct(product)}
                             aria-label={`Hapus ${product.name}`}
                             className="text-destructive hover:text-destructive hover:bg-destructive/10"
                           >
@@ -473,90 +438,117 @@ export function AdminDashboard({
 
         {/* Mobile Stacked Cards */}
         <div className="grid grid-cols-1 gap-3 md:hidden">
-          {catalog.filteredProducts.map((product) => {
-            const category = findCategory(product.category);
-            return (
-              <Card
-                key={product.id}
-                className="rounded-lg border border-border bg-card p-4 ring-0 gap-3"
-              >
-                <div className="flex items-start gap-3">
-                  <div className="relative size-14 shrink-0 overflow-hidden rounded-md border border-border bg-muted">
-                    <Image
-                      src={product.images[0]?.url ?? DEFAULT_PRODUCT_IMAGE}
-                      alt={product.name}
-                      fill
-                      sizes="56px"
-                      className="object-cover"
-                    />
-                  </div>
-                  <div className="min-w-0 flex-1 space-y-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="font-mono text-[11px] text-muted-foreground">
-                        {product.sku}
-                      </span>
-                      <Badge variant="secondary" className="text-[10px] border border-border">
-                        {category?.shortName ?? product.category}
-                      </Badge>
+          {catalog.filteredProducts.length === 0 ? (
+            <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card px-6 py-12 text-center">
+              <Package
+                className="size-7 text-muted-foreground/50 mb-2.5"
+                aria-hidden="true"
+              />
+              <p className="text-sm font-semibold text-foreground">
+                Tidak ada produk yang cocok dengan filter
+              </p>
+              {catalog.hasActiveFilters && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={catalog.clearFilters}
+                  className="mt-3 gap-1.5"
+                >
+                  <RotateCcw className="size-3.5" aria-hidden="true" />
+                  <span>Reset Filter</span>
+                </Button>
+              )}
+            </div>
+          ) : (
+            catalog.filteredProducts.map((product) => {
+              const category = catalog.findCategory(product.category);
+              return (
+                <Card
+                  key={product.id}
+                  className="rounded-lg border border-border bg-card p-4 ring-0 gap-3"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="relative size-14 shrink-0 overflow-hidden rounded-md border border-border bg-muted">
+                      <Image
+                        src={product.images[0]?.url ?? DEFAULT_PRODUCT_IMAGE}
+                        alt={product.name}
+                        fill
+                        sizes="56px"
+                        className="object-cover"
+                      />
                     </div>
-                    <h2 className="line-clamp-2 text-sm font-semibold text-foreground">
-                      {product.name}
-                    </h2>
-                    <p className="font-mono text-sm font-bold tabular-nums text-foreground">
-                      {formatPrice(product.price, product.currency)}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between border-t border-border pt-3 gap-2">
-                  <div className="flex items-center gap-2">
-                    <Switch
-                      checked={product.inStock}
-                      disabled={catalog.togglingId === product.id}
-                      onCheckedChange={(checked) =>
-                        catalog.toggleStock(product, Boolean(checked))
-                      }
-                      aria-label={`Ubah stok ${product.name}`}
-                    />
-                    <span className="text-xs font-medium text-muted-foreground">
-                      {product.inStock ? "Tersedia" : "Habis"}
-                    </span>
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-mono text-[11px] text-muted-foreground">
+                          {product.sku}
+                        </span>
+                        <Badge
+                          variant="secondary"
+                          className="text-[10px] border border-border"
+                        >
+                          {category?.shortName ?? product.category}
+                        </Badge>
+                      </div>
+                      <h2 className="line-clamp-2 text-sm font-semibold text-foreground">
+                        {product.name}
+                      </h2>
+                      <p className="font-mono text-sm font-bold tabular-nums text-foreground">
+                        {formatPrice(product.price, product.currency)}
+                      </p>
+                    </div>
                   </div>
 
-                  <div className="flex items-center gap-1.5">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleOpenEdit(product)}
-                      className="h-9 min-h-[40px] gap-1.5 px-3 text-xs"
-                    >
-                      <Pencil className="size-3.5" aria-hidden="true" />
-                      <span>Edit</span>
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => setDeletingProduct(product)}
-                      className="h-9 min-h-[40px] px-3 text-xs"
-                      aria-label={`Hapus ${product.name}`}
-                    >
-                      <Trash2 className="size-3.5" aria-hidden="true" />
-                    </Button>
+                  <div className="flex items-center justify-between border-t border-border pt-3 gap-2">
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        checked={product.inStock}
+                        disabled={catalog.togglingId === product.id}
+                        onCheckedChange={(checked) =>
+                          catalog.toggleStock(product, Boolean(checked))
+                        }
+                        aria-label={`Ubah stok ${product.name}`}
+                      />
+                      <span className="text-xs font-medium text-muted-foreground">
+                        {product.inStock ? "Tersedia" : "Habis"}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => catalog.openEditForm(product)}
+                        className="h-9 min-h-[40px] gap-1.5 px-3 text-xs"
+                      >
+                        <Pencil className="size-3.5" aria-hidden="true" />
+                        <span>Edit</span>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => catalog.setDeletingProduct(product)}
+                        className="h-9 min-h-[40px] px-3 text-xs"
+                        aria-label={`Hapus ${product.name}`}
+                      >
+                        <Trash2 className="size-3.5" aria-hidden="true" />
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </Card>
-            );
-          })}
+                </Card>
+              );
+            })
+          )}
         </div>
       </div>
 
       {/* Insert / Edit Modal */}
       <ProductFormDialog
-        open={formOpen}
-        onOpenChange={setFormOpen}
-        product={editingProduct}
+        open={catalog.formOpen}
+        onOpenChange={catalog.setFormOpen}
+        product={catalog.editingProduct}
         categories={categories}
         motorcycles={motorcycles}
         onSaved={catalog.applySavedProduct}
@@ -564,9 +556,9 @@ export function AdminDashboard({
 
       {/* Delete Confirmation AlertDialog */}
       <AlertDialog
-        open={Boolean(deletingProduct)}
+        open={Boolean(catalog.deletingProduct)}
         onOpenChange={(open) => {
-          if (!open) setDeletingProduct(null);
+          if (!open) catalog.setDeletingProduct(null);
         }}
       >
         <AlertDialogContent>
@@ -575,10 +567,11 @@ export function AdminDashboard({
             <AlertDialogDescription>
               Produk{" "}
               <strong className="text-foreground">
-                {deletingProduct?.name}
+                {catalog.deletingProduct?.name}
               </strong>{" "}
-              (<span className="font-mono">{deletingProduct?.sku}</span>) akan
-              dihapus permanen dari katalog CR7 Racing.
+              (
+              <span className="font-mono">{catalog.deletingProduct?.sku}</span>)
+              akan dihapus permanen dari katalog CR7 Racing.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -587,7 +580,7 @@ export function AdminDashboard({
             </AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
-              onClick={handleConfirmDelete}
+              onClick={catalog.confirmDelete}
               disabled={catalog.deleting}
             >
               {catalog.deleting ? "Menghapus..." : "Hapus Produk"}

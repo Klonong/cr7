@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
 import {
   Bike,
   ExternalLink,
@@ -14,7 +13,7 @@ import {
 import { Button, buttonVariants } from "@/components/ui/button";
 import { BrandLogo } from "@/components/shared/brand-logo";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
-import { logoutAdmin } from "@/lib/api/auth-api";
+import { useAdminHeader } from "@/hooks/admin/use-admin-header";
 import { cn } from "@/lib/utils";
 
 const ADMIN_NAV_ITEMS = [
@@ -60,14 +59,7 @@ interface AdminHeaderProps {
 }
 
 export function AdminHeader({ username }: AdminHeaderProps) {
-  const pathname = usePathname();
-  const router = useRouter();
-
-  const handleLogout = async () => {
-    await logoutAdmin();
-    router.replace("/admin/login");
-    router.refresh();
-  };
+  const { isNavItemActive, handleLogout } = useAdminHeader();
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/15 bg-[#000000] text-[#fefefe] shadow-sm">
@@ -86,9 +78,7 @@ export function AdminHeader({ username }: AdminHeaderProps) {
           >
             {ADMIN_NAV_ITEMS.map((item) => {
               const Icon = item.icon;
-              const isActive = item.exact
-                ? pathname === item.href
-                : pathname.startsWith(item.href);
+              const isActive = isNavItemActive(item.href, item.exact);
               return (
                 <Link
                   key={item.href}
@@ -147,9 +137,7 @@ export function AdminHeader({ username }: AdminHeaderProps) {
       >
         {ADMIN_NAV_ITEMS.map((item) => {
           const Icon = item.icon;
-          const isActive = item.exact
-            ? pathname === item.href
-            : pathname.startsWith(item.href);
+          const isActive = isNavItemActive(item.href, item.exact);
           return (
             <Link
               key={item.href}

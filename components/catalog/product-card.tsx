@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Eye, Sparkles } from "lucide-react";
@@ -14,8 +13,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { MarketplaceCta } from "@/components/catalog/marketplace-cta";
-import { formatPrice, getDiscountPercent } from "@/lib/format";
-import { getCategoryBySlug } from "@/data/categories";
+import { useProductCard } from "@/hooks/catalog/use-product-card";
+import { formatPrice } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/types/catalog";
 
@@ -30,12 +29,16 @@ export function ProductCard({
   onQuickView,
   priority = false,
 }: ProductCardProps) {
-  const [showSecondary, setShowSecondary] = React.useState(false);
-  const category = getCategoryBySlug(product.category);
-  const discount = getDiscountPercent(product.price, product.originalPrice);
-  const primaryImage = product.images[0];
-  const secondaryImage = product.images[1];
-  const variants = product.variants ?? [];
+  const {
+    category,
+    discount,
+    primaryImage,
+    secondaryImage,
+    activeImageUrl,
+    variants,
+    handleMouseEnter,
+    handleMouseLeave,
+  } = useProductCard(product);
 
   return (
     <Card
@@ -47,8 +50,8 @@ export function ProductCard({
       {/* 1:1 Image Frame */}
       <div
         className="relative overflow-hidden bg-muted border-b border-border/60"
-        onMouseEnter={() => secondaryImage && setShowSecondary(true)}
-        onMouseLeave={() => setShowSecondary(false)}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       >
         <Link
           href={`/products/${product.slug}`}
@@ -57,11 +60,7 @@ export function ProductCard({
         >
           <AspectRatio ratio={1}>
             <Image
-              src={
-                showSecondary && secondaryImage
-                  ? secondaryImage.url
-                  : primaryImage.url
-              }
+              src={activeImageUrl}
               alt={primaryImage.alt}
               fill
               priority={priority}

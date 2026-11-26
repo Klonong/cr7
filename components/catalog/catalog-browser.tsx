@@ -1,7 +1,5 @@
 "use client";
 
-import * as React from "react";
-import { useSearchParams } from "next/navigation";
 import {
   Filter,
   RotateCcw,
@@ -34,7 +32,10 @@ import {
 import { ProductCard } from "@/components/catalog/product-card";
 import { ProductQuickView } from "@/components/catalog/product-quick-view";
 import { PRODUCT_BADGES } from "@/config/store";
-import { useProductFilters } from "@/hooks/use-product-filters";
+import {
+  useCatalogBrowser,
+  useCatalogUrlParams,
+} from "@/hooks/catalog/use-catalog-browser";
 import type {
   Category,
   CategorySlug,
@@ -264,14 +265,12 @@ export function CatalogBrowser({
   categories: Category[];
   motorcycles: Motorcycle[];
 }) {
-  const searchParams = useSearchParams();
-  const initialCategory = searchParams.get("category") as CategorySlug | null;
-  const initialBike = searchParams.get("bike") ?? "";
-  const initialQuery = searchParams.get("q") ?? "";
+  const { initialCategory, initialBike, initialQuery, urlKey } =
+    useCatalogUrlParams();
 
   return (
     <CatalogBrowserInner
-      key={`${initialCategory ?? ""}|${initialBike}|${initialQuery}`}
+      key={urlKey}
       products={products}
       categories={categories}
       motorcycles={motorcycles}
@@ -297,17 +296,14 @@ function CatalogBrowserInner({
   initialBike: string;
   initialQuery: string;
 }) {
-  const filters = useProductFilters({
-    products,
-    categories,
-    initialCategory,
-    initialBike,
-    initialQuery,
-  });
-
-  const [quickViewProduct, setQuickViewProduct] =
-    React.useState<Product | null>(null);
-  const [mobileFilterOpen, setMobileFilterOpen] = React.useState(false);
+  const { filters, quickView, mobileFilterOpen, setMobileFilterOpen } =
+    useCatalogBrowser({
+      products,
+      categories,
+      initialCategory,
+      initialBike,
+      initialQuery,
+    });
 
   const filterPanelProps: FilterPanelProps = {
     products,
@@ -502,7 +498,7 @@ function CatalogBrowserInner({
               <ProductCard
                 key={product.id}
                 product={product}
-                onQuickView={(p) => setQuickViewProduct(p)}
+                onQuickView={quickView.openQuickView}
               />
             ))}
           </div>
@@ -512,7 +508,7 @@ function CatalogBrowserInner({
               <Search className="size-5" aria-hidden="true" />
             </div>
             <h3 className="text-base font-semibold text-foreground">
-              Tidak ada aksesoris yang sesuai filter
+              Tidak ada aksesori yang sesuai filter
             </h3>
             <p className="mt-1 max-w-sm text-sm text-muted-foreground">
               Coba hapus salah satu filter aktif atau cari dengan kata kunci
@@ -532,11 +528,9 @@ function CatalogBrowserInner({
       </div>
 
       <ProductQuickView
-        product={quickViewProduct}
-        open={Boolean(quickViewProduct)}
-        onOpenChange={(open) => {
-          if (!open) setQuickViewProduct(null);
-        }}
+        product={quickView.quickViewProduct}
+        open={quickView.isOpen}
+        onOpenChange={quickView.handleOpenChange}
       />
     </div>
   );

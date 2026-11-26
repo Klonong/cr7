@@ -50,7 +50,7 @@ export function Footer() {
         <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-4">
           {/* Brand Column */}
           <div className="space-y-4">
-            <BrandLogo href="/" subtitle={STORE_CONFIG.brandTagline} onDark />
+            <BrandLogo href="/" onDark />
             <p className="text-sm leading-relaxed text-zinc-400">
               Katalog digital resmi untuk lampu LED motor, Bi-LED projector,
               aksesoris kokpit CNC, holder touring, dan pelindung bodi. Cek

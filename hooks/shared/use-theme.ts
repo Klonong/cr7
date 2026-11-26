@@ -2,15 +2,15 @@
 
 import * as React from "react";
 
-type Theme = "light" | "dark";
+export type Theme = "light" | "dark";
 
-interface ThemeContextValue {
+export interface ThemeContextValue {
   theme: Theme;
   setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
 }
 
-const ThemeContext = React.createContext<ThemeContextValue | undefined>(
+export const ThemeContext = React.createContext<ThemeContextValue | undefined>(
   undefined
 );
 
@@ -48,7 +48,7 @@ function writeTheme(next: Theme) {
   listeners.forEach((l) => l());
 }
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
+export function useThemeProvider(): ThemeContextValue {
   const theme = React.useSyncExternalStore(
     subscribe,
     readClientTheme,
@@ -68,17 +68,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     writeTheme(current === "dark" ? "light" : "dark");
   }, []);
 
-  const value = React.useMemo(
+  return React.useMemo(
     () => ({ theme, setTheme, toggleTheme }),
     [theme, setTheme, toggleTheme]
   );
-
-  return (
-    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
-  );
 }
 
-export function useTheme() {
+export function useTheme(): ThemeContextValue {
   const ctx = React.useContext(ThemeContext);
   if (!ctx) {
     throw new Error("useTheme must be used within a ThemeProvider");

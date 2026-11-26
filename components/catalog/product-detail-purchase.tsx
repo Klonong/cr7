@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import Link from "next/link";
 import {
   Info,
@@ -12,7 +11,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { MarketplaceCta } from "@/components/catalog/marketplace-cta";
-import { formatPrice, getDiscountPercent } from "@/lib/format";
+import { useProductVariant } from "@/hooks/catalog/use-product-variant";
+import { formatPrice } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { Category, Product } from "@/types/catalog";
 
@@ -25,20 +25,16 @@ export function ProductDetailPurchase({
   product,
   category,
 }: ProductDetailPurchaseProps) {
-  const variants = product.variants ?? [];
-  const [selectedVariantId, setSelectedVariantId] = React.useState<string | null>(
-    variants[0]?.id ?? null
-  );
-
-  const selectedVariant =
-    variants.find((v) => v.id === selectedVariantId) ?? null;
-
-  const displayPrice = selectedVariant?.price ?? product.price;
-  const displaySku = selectedVariant?.sku ?? product.sku;
-  const isAvailable = selectedVariant
-    ? product.inStock && selectedVariant.inStock
-    : product.inStock;
-  const discount = getDiscountPercent(displayPrice, product.originalPrice);
+  const {
+    variants,
+    selectedVariantId,
+    selectedVariant,
+    selectVariant,
+    displayPrice,
+    displaySku,
+    isAvailable,
+    discount,
+  } = useProductVariant(product);
 
   return (
     <>
@@ -127,7 +123,7 @@ export function ProductDetailPurchase({
                   <button
                     key={v.id}
                     type="button"
-                    onClick={() => setSelectedVariantId(v.id)}
+                    onClick={() => selectVariant(v.id)}
                     className={cn(
                       "flex items-center justify-between gap-2 rounded-lg border px-3 py-2.5 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                       active

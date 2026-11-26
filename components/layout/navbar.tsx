@@ -1,8 +1,6 @@
 "use client";
 
-import * as React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -19,34 +17,23 @@ import { BrandLogo } from "@/components/shared/brand-logo";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { OfficialStoreLinks } from "@/components/shared/official-store-links";
 import { PRIMARY_NAV_LINKS } from "@/config/store";
-import { CATEGORIES as FALLBACK_CATEGORIES } from "@/data/categories";
-import { fetchPublicCategories } from "@/lib/api/category-api";
+import { useNavbar } from "@/hooks/layout/use-navbar";
 import { cn } from "@/lib/utils";
-import type { Category } from "@/types/catalog";
 
 export function Navbar() {
-  const pathname = usePathname();
-  const [mobileOpen, setMobileOpen] = React.useState(false);
-  const [categories, setCategories] =
-    React.useState<Category[]>(FALLBACK_CATEGORIES);
-
-  const handleMobileOpenChange = (open: boolean) => {
-    setMobileOpen(open);
-    if (open) {
-      fetchPublicCategories()
-        .then((list) => setCategories(list))
-        .catch(() => {});
-    }
-  };
+  const {
+    mobileOpen,
+    categories,
+    handleMobileOpenChange,
+    closeMobileMenu,
+    isNavItemActive,
+  } = useNavbar();
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-white/15 bg-[#000000] text-[#fefefe] shadow-sm">
       <div className="mx-auto flex min-h-20 max-w-[1320px] items-center justify-between gap-4 px-4 py-3 sm:px-6 sm:py-3.5 lg:px-8">
         {/* Brand Logo */}
-        <BrandLogo
-          href="/"
-          onDark
-        />
+        <BrandLogo href="/" subtitle="Aksesori & Lampu Motor" onDark />
 
         {/* Center Desktop Navigation */}
         <nav
@@ -54,9 +41,7 @@ export function Navbar() {
           className="hidden lg:flex items-center gap-1"
         >
           {PRIMARY_NAV_LINKS.map((item) => {
-            const isActive =
-              (item.href === "/products" && pathname === "/products") ||
-              (item.href === "/about" && pathname === "/about");
+            const isActive = isNavItemActive(item.href);
             return (
               <Link
                 key={item.href}
@@ -74,7 +59,7 @@ export function Navbar() {
           })}
         </nav>
 
-        {/* Right Utilities — Search, Official Store Links, Theme Toggle (NO Cart or Admin Login) */}
+        {/* Right Utilities — Search, Official Store Links, Theme Toggle */}
         <div className="flex items-center gap-2">
           <CommandSearch onPrimary />
 
@@ -103,7 +88,7 @@ export function Navbar() {
                   <BrandLogo href={null} size="sm" />
                 </SheetTitle>
                 <SheetDescription>
-                  Jelajahi katalog aksesoris motor dan order langsung di toko
+                  Jelajahi katalog aksesori motor dan order langsung di toko
                   resmi Shopee atau TikTok Shop.
                 </SheetDescription>
               </SheetHeader>
@@ -115,14 +100,14 @@ export function Navbar() {
                   </p>
                   <Link
                     href="/products"
-                    onClick={() => setMobileOpen(false)}
+                    onClick={closeMobileMenu}
                     className="flex min-h-[44px] items-center rounded-md px-2.5 text-sm font-medium text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    Semua Aksesoris Motor
+                    Semua Aksesori Motor
                   </Link>
                   <Link
                     href="/about"
-                    onClick={() => setMobileOpen(false)}
+                    onClick={closeMobileMenu}
                     className="flex min-h-[44px] items-center rounded-md px-2.5 text-sm font-medium text-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     Tentang Kami &amp; YouTube
@@ -131,7 +116,7 @@ export function Navbar() {
                     <Link
                       key={category.slug}
                       href={`/products?category=${category.slug}`}
-                      onClick={() => setMobileOpen(false)}
+                      onClick={closeMobileMenu}
                       className="flex min-h-[44px] items-center rounded-md px-2.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       {category.name}

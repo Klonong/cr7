@@ -1,8 +1,6 @@
 "use client";
 
-import * as React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   AlertCircle,
   ArrowLeft,
@@ -34,9 +32,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { AdminHeader } from "@/components/admin/admin-header";
 import { MOTORCYCLE_TYPES } from "@/config/store";
-import { createCatalogMotorcycle } from "@/lib/api/motorcycle-api";
-import { getErrorMessage } from "@/lib/api/client";
-import { validateMotorcycleInput } from "@/lib/validation/motorcycle";
+import { useMotorcycleForm } from "@/hooks/admin/use-motorcycle-form";
 import { cn } from "@/lib/utils";
 import type { Motorcycle, MotorcycleType } from "@/types/catalog";
 
@@ -58,63 +54,7 @@ export function MotorcycleCreateView({
   existingMotorcycles,
   username,
 }: MotorcycleCreateViewProps) {
-  const router = useRouter();
-
-  const [brand, setBrand] = React.useState("");
-  const [model, setModel] = React.useState("");
-  const [customName, setCustomName] = React.useState("");
-  const [nameTouched, setNameTouched] = React.useState(false);
-  const [type, setType] = React.useState<MotorcycleType>("Matic");
-
-  const [submitting, setSubmitting] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-
-  const computedName = nameTouched
-    ? customName.trim()
-    : brand.trim().toLowerCase() === "universal"
-      ? "Universal"
-      : [brand.trim(), model.trim()].filter(Boolean).join(" ");
-
-  const isDuplicate = React.useMemo(() => {
-    if (!computedName) return false;
-    return existingMotorcycles.some(
-      (m) => m.name.toLowerCase() === computedName.toLowerCase()
-    );
-  }, [computedName, existingMotorcycles]);
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError(null);
-
-    if (isDuplicate) {
-      setError(`Motor "${computedName}" sudah terdaftar di sistem.`);
-      return;
-    }
-
-    const validation = validateMotorcycleInput({
-      brand,
-      model,
-      name: computedName,
-      type,
-    });
-
-    if (!validation.ok) {
-      setError(validation.error);
-      return;
-    }
-
-    setSubmitting(true);
-    try {
-      await createCatalogMotorcycle(validation.data);
-      router.push(
-        `/admin/motorcycles?created=${encodeURIComponent(validation.data.name ?? computedName)}`
-      );
-      router.refresh();
-    } catch (err) {
-      setError(getErrorMessage(err, "Gagal menambahkan data motor."));
-      setSubmitting(false);
-    }
-  };
+  const form = useMotorcycleForm(existingMotorcycles);
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -171,9 +111,9 @@ export function MotorcycleCreateView({
 
         {/* 2-Column Form + Live Preview */}
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 items-start">
-          <form onSubmit={handleSubmit} className="lg:col-span-7">
+          <form onSubmit={form.handleSubmit} className="lg:col-span-7">
             <Card className="rounded-xl border border-border bg-card p-6 ring-0 space-y-6">
-              {error && (
+              {form.error && (
                 <div
                   role="alert"
                   className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-xs font-medium text-destructive"
@@ -182,7 +122,7 @@ export function MotorcycleCreateView({
                     className="size-4 shrink-0 mt-0.5"
                     aria-hidden="true"
                   />
-                  <span>{error}</span>
+                  <span>{form.error}</span>
                 </div>
               )}
 
@@ -196,10 +136,10 @@ export function MotorcycleCreateView({
                     <button
                       key={b}
                       type="button"
-                      onClick={() => setBrand(b)}
+                      onClick={() => form.setBrand(b)}
                       className={cn(
                         "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
-                        brand.toLowerCase() === b.toLowerCase()
+                        form.brand.toLowerCase() === b.toLowerCase()
                           ? "border-primary bg-primary text-primary-foreground"
                           : "border-border bg-muted/40 text-muted-foreground hover:text-foreground"
                       )}
@@ -218,8 +158,8 @@ export function MotorcycleCreateView({
                   <Input
                     id="moto-brand"
                     required
-                    value={brand}
-                    onChange={(e) => setBrand(e.target.value)}
+                    value={form.brand}
+                    onChange={(e) => form.setBrand(e.target.value)}
                     placeholder="mis. Yamaha, Honda, Vespa"
                     className="h-10"
                   />
@@ -232,8 +172,8 @@ export function MotorcycleCreateView({
                   <Input
                     id="moto-model"
                     required
-                    value={model}
-                    onChange={(e) => setModel(e.target.value)}
+                    value={form.model}
+                    onChange={(e) => form.setModel(e.target.value)}
                     placeholder="mis. XMAX 250, Stylo 160, CBR250RR"
                     className="h-10"
                   />
@@ -244,13 +184,13 @@ export function MotorcycleCreateView({
                     Jenis Motor *
                   </Label>
                   <Select
-                    value={type}
+                    value={form.type}
                     onValueChange={(v) => {
-                      if (v) setType(v as MotorcycleType);
+                      if (v) form.setType(v as MotorcycleType);
                     }}
                   >
                     <SelectTrigger id="moto-type" className="w-full h-10">
-                      <SelectValue>{type}</SelectValue>
+                      <SelectValue>{form.type}</SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {MOTORCYCLE_TYPES.map((t) => (
@@ -268,18 +208,17 @@ export function MotorcycleCreateView({
                   </Label>
                   <Input
                     id="moto-name"
-                    value={nameTouched ? customName : computedName}
-                    onChange={(e) => {
-                      setNameTouched(true);
-                      setCustomName(e.target.value);
-                    }}
+                    value={form.displayNameInput}
+                    onChange={(e) =>
+                      form.handleCustomNameChange(e.target.value)
+                    }
                     placeholder="Otomatis: Merek + Model"
-                    aria-invalid={isDuplicate}
+                    aria-invalid={form.isDuplicate}
                     className="h-10"
                   />
-                  {isDuplicate && (
+                  {form.isDuplicate && (
                     <p className="text-[11px] font-medium text-destructive">
-                      Motor &ldquo;{computedName}&rdquo; sudah ada.
+                      Motor &ldquo;{form.computedName}&rdquo; sudah ada.
                     </p>
                   )}
                 </div>
@@ -299,10 +238,10 @@ export function MotorcycleCreateView({
                 </Link>
                 <Button
                   type="submit"
-                  disabled={submitting || isDuplicate}
+                  disabled={form.submitting || form.isDuplicate}
                   className="h-11 min-h-[44px] gap-2 px-6 font-semibold"
                 >
-                  {submitting ? (
+                  {form.submitting ? (
                     <>
                       <Loader2
                         className="size-4 animate-spin"
@@ -331,7 +270,10 @@ export function MotorcycleCreateView({
                     Pratinjau Filter Toko
                   </h2>
                 </div>
-                <Badge variant="secondary" className="font-mono text-[10px] border border-border">
+                <Badge
+                  variant="secondary"
+                  className="font-mono text-[10px] border border-border"
+                >
                   Real-time
                 </Badge>
               </div>
@@ -342,7 +284,7 @@ export function MotorcycleCreateView({
                 </p>
                 <span className="inline-flex min-h-[40px] items-center gap-2 rounded-full border border-primary bg-card px-4 py-2 text-sm font-semibold text-primary shadow-xs">
                   <Bike className="size-4" aria-hidden="true" />
-                  <span>{computedName || "Yamaha XMAX 250"}</span>
+                  <span>{form.computedName || "Yamaha XMAX 250"}</span>
                 </span>
               </div>
 
@@ -353,19 +295,19 @@ export function MotorcycleCreateView({
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Merek</span>
                   <span className="font-semibold text-foreground">
-                    {brand.trim() || "—"}
+                    {form.brand.trim() || "—"}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Model</span>
                   <span className="font-semibold text-foreground">
-                    {model.trim() || "—"}
+                    {form.model.trim() || "—"}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Jenis</span>
                   <Badge variant="outline" className="text-[11px]">
-                    {type}
+                    {form.type}
                   </Badge>
                 </div>
               </div>

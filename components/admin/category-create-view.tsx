@@ -1,8 +1,6 @@
 "use client";
 
-import * as React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   AlertCircle,
   ArrowLeft,
@@ -29,10 +27,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { AdminHeader } from "@/components/admin/admin-header";
-import { createCatalogCategory } from "@/lib/api/category-api";
-import { getErrorMessage } from "@/lib/api/client";
-import { slugify } from "@/lib/format";
-import { validateCategoryInput } from "@/lib/validation/category";
+import { useCategoryCreateForm } from "@/hooks/admin/use-category-form";
 import { cn } from "@/lib/utils";
 import type { Category } from "@/types/catalog";
 
@@ -45,72 +40,7 @@ export function CategoryCreateView({
   existingCategories,
   username,
 }: CategoryCreateViewProps) {
-  const router = useRouter();
-
-  const [name, setName] = React.useState("");
-  const [shortName, setShortName] = React.useState("");
-  const [shortNameTouched, setShortNameTouched] = React.useState(false);
-  const [slug, setSlug] = React.useState("");
-  const [slugTouched, setSlugTouched] = React.useState(false);
-  const [description, setDescription] = React.useState("");
-
-  const [submitting, setSubmitting] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-
-  const existingSlugs = React.useMemo(
-    () => new Set(existingCategories.map((c) => c.slug)),
-    [existingCategories]
-  );
-
-  const previewSlug = slugify(slug || name);
-  const isDuplicateSlug = Boolean(previewSlug && existingSlugs.has(previewSlug));
-
-  const handleNameChange = (val: string) => {
-    setName(val);
-    if (!slugTouched) {
-      setSlug(slugify(val));
-    }
-    if (!shortNameTouched) {
-      const firstWord = val.trim().split(/[\s&/]+/)[0] ?? "";
-      setShortName(firstWord.slice(0, 18));
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError(null);
-
-    if (isDuplicateSlug) {
-      setError(
-        `Kategori dengan slug "${previewSlug}" sudah terdaftar. Gunakan slug lain.`
-      );
-      return;
-    }
-
-    const validation = validateCategoryInput({
-      name,
-      shortName,
-      slug: slug || name,
-      description,
-    });
-
-    if (!validation.ok) {
-      setError(validation.error);
-      return;
-    }
-
-    setSubmitting(true);
-    try {
-      await createCatalogCategory(validation.data);
-      router.push(
-        "/admin/categories?created=" + encodeURIComponent(validation.data.name)
-      );
-      router.refresh();
-    } catch (err) {
-      setError(getErrorMessage(err, "Gagal membuat kategori baru."));
-      setSubmitting(false);
-    }
-  };
+  const form = useCategoryCreateForm(existingCategories);
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -145,7 +75,7 @@ export function CategoryCreateView({
               Pengaturan Kategori
             </p>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-              Tambah Kategori Aksesoris Baru
+              Tambah Kategori Aksesori Baru
             </h1>
             <p className="text-sm text-muted-foreground">
               Kategori tampil ringkas tanpa gambar agar cepat dipindai di
@@ -167,9 +97,9 @@ export function CategoryCreateView({
 
         {/* 2-Column Form + Live Preview */}
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 items-start">
-          <form onSubmit={handleSubmit} className="lg:col-span-7">
+          <form onSubmit={form.handleSubmit} className="lg:col-span-7">
             <Card className="rounded-xl border border-border bg-card p-6 ring-0 space-y-6">
-              {error && (
+              {form.error && (
                 <div
                   role="alert"
                   className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-xs font-medium text-destructive"
@@ -178,7 +108,7 @@ export function CategoryCreateView({
                     className="size-4 shrink-0 mt-0.5"
                     aria-hidden="true"
                   />
-                  <span>{error}</span>
+                  <span>{form.error}</span>
                 </div>
               )}
 
@@ -190,8 +120,8 @@ export function CategoryCreateView({
                   <Input
                     id="cat-name"
                     required
-                    value={name}
-                    onChange={(e) => handleNameChange(e.target.value)}
+                    value={form.name}
+                    onChange={(e) => form.handleNameChange(e.target.value)}
                     placeholder="mis. Knalpot & Sistem Pembuangan Racing"
                     className="h-10"
                   />
@@ -205,11 +135,8 @@ export function CategoryCreateView({
                     id="cat-short"
                     required
                     maxLength={22}
-                    value={shortName}
-                    onChange={(e) => {
-                      setShortNameTouched(true);
-                      setShortName(e.target.value);
-                    }}
+                    value={form.shortName}
+                    onChange={(e) => form.handleShortNameChange(e.target.value)}
                     placeholder="mis. Knalpot"
                     className="h-10"
                   />
@@ -222,22 +149,19 @@ export function CategoryCreateView({
                   <Input
                     id="cat-slug"
                     required
-                    value={slug}
-                    onChange={(e) => {
-                      setSlugTouched(true);
-                      setSlug(e.target.value);
-                    }}
+                    value={form.slug}
+                    onChange={(e) => form.handleSlugChange(e.target.value)}
                     placeholder="knalpot-racing"
-                    aria-invalid={isDuplicateSlug}
+                    aria-invalid={form.isDuplicateSlug}
                     className="h-10 font-mono text-xs"
                   />
-                  {isDuplicateSlug ? (
+                  {form.isDuplicateSlug ? (
                     <p className="text-[11px] font-medium text-destructive">
-                      Slug &ldquo;{previewSlug}&rdquo; sudah terdaftar.
+                      Slug &ldquo;{form.previewSlug}&rdquo; sudah terdaftar.
                     </p>
                   ) : (
                     <p className="truncate font-mono text-[11px] text-muted-foreground">
-                      /products?category={previewSlug || "slug-kategori"}
+                      /products?category={form.previewSlug || "slug-kategori"}
                     </p>
                   )}
                 </div>
@@ -248,7 +172,7 @@ export function CategoryCreateView({
                       Deskripsi Singkat *
                     </Label>
                     <span className="font-mono text-[11px] text-muted-foreground">
-                      {description.length} / 140 karakter
+                      {form.description.length} / 140 karakter
                     </span>
                   </div>
                   <Textarea
@@ -256,8 +180,8 @@ export function CategoryCreateView({
                     required
                     rows={3}
                     maxLength={140}
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
+                    value={form.description}
+                    onChange={(e) => form.setDescription(e.target.value)}
                     placeholder="Silincer slip-on racing, header stainless, dan breket knalpot CNC."
                   />
                 </div>
@@ -277,10 +201,10 @@ export function CategoryCreateView({
                 </Link>
                 <Button
                   type="submit"
-                  disabled={submitting || isDuplicateSlug}
+                  disabled={form.submitting || form.isDuplicateSlug}
                   className="h-11 min-h-[44px] gap-2 px-6 font-semibold"
                 >
-                  {submitting ? (
+                  {form.submitting ? (
                     <>
                       <Loader2
                         className="size-4 animate-spin"
@@ -322,7 +246,7 @@ export function CategoryCreateView({
                 <div className="flex items-center justify-between gap-2">
                   <span className="inline-flex items-center gap-1.5 rounded-md bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
                     <Tag className="size-3.5" aria-hidden="true" />
-                    <span>{shortName.trim() || "Label Singkat"}</span>
+                    <span>{form.shortName.trim() || "Label Singkat"}</span>
                   </span>
                   <span className="font-mono text-xs font-semibold text-muted-foreground">
                     0 produk
@@ -331,10 +255,10 @@ export function CategoryCreateView({
 
                 <div className="space-y-1.5">
                   <p className="text-base font-bold text-foreground">
-                    {name.trim() || "Nama Lengkap Kategori"}
+                    {form.name.trim() || "Nama Lengkap Kategori"}
                   </p>
                   <p className="line-clamp-2 text-xs leading-relaxed text-muted-foreground">
-                    {description.trim() ||
+                    {form.description.trim() ||
                       "Deskripsi kategori akan tampil rapi maksimal 2 baris di kartu beranda."}
                   </p>
                 </div>
@@ -357,7 +281,7 @@ export function CategoryCreateView({
                   <span>Katalog</span>
                   <ChevronRight className="size-3" aria-hidden="true" />
                   <span className="font-semibold text-foreground">
-                    {shortName.trim() || "Label Singkat"}
+                    {form.shortName.trim() || "Label Singkat"}
                   </span>
                 </div>
               </div>

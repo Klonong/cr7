@@ -1,19 +1,30 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { deleteCatalogCategory } from "@/lib/api/category-api";
 import { getErrorMessage } from "@/lib/api/client";
-import type { AdminFeedback } from "@/hooks/use-admin-catalog";
-import type { Category } from "@/types/catalog";
+import type { AdminFeedback } from "@/hooks/admin/use-admin-catalog";
+import type { Category, Product } from "@/types/catalog";
 
-export function useAdminCategories(initialCategories: Category[]) {
+export function useAdminCategories(
+  initialCategories: Category[],
+  products: Product[] = []
+) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const createdName = searchParams.get("created");
+
   const [categories, setCategories] =
     React.useState<Category[]>(initialCategories);
   const [search, setSearch] = React.useState("");
   const [deleting, setDeleting] = React.useState(false);
   const [feedback, setFeedback] = React.useState<AdminFeedback | null>(null);
+  const [editingCategory, setEditingCategory] =
+    React.useState<Category | null>(null);
+  const [deletingCategory, setDeletingCategory] =
+    React.useState<Category | null>(null);
+  const [dismissedCreated, setDismissedCreated] = React.useState(false);
 
   const applySavedCategory = React.useCallback(
     (saved: Category, mode: "create" | "edit") => {
@@ -62,6 +73,12 @@ export function useAdminCategories(initialCategories: Category[]) {
     [router]
   );
 
+  const confirmDelete = React.useCallback(async () => {
+    if (!deletingCategory) return;
+    await removeCategory(deletingCategory);
+    setDeletingCategory(null);
+  }, [deletingCategory, removeCategory]);
+
   const filteredCategories = React.useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return categories;
@@ -72,15 +89,52 @@ export function useAdminCategories(initialCategories: Category[]) {
     );
   }, [categories, search]);
 
+  const productCounts = React.useMemo(() => {
+    const map = new Map<string, number>();
+    for (const p of products) {
+      map.set(p.category, (map.get(p.category) ?? 0) + 1);
+    }
+    return map;
+  }, [products]);
+
+  const populatedCount = React.useMemo(
+    () => categories.filter((c) => (productCounts.get(c.slug) ?? 0) > 0).length,
+    [categories, productCounts]
+  );
+
+  const activeFeedback: AdminFeedback | null =
+    feedback ??
+    (createdName && !dismissedCreated
+      ? {
+          type: "success",
+          message: `Kategori baru "${createdName}" berhasil dibuat dan tampil di toko.`,
+        }
+      : null);
+
+  const dismissFeedback = React.useCallback(() => {
+    if (feedback) {
+      setFeedback(null);
+    } else {
+      setDismissedCreated(true);
+    }
+  }, [feedback]);
+
   return {
     categories,
     filteredCategories,
+    productCounts,
+    populatedCount,
     search,
     setSearch,
     deleting,
-    feedback,
-    clearFeedback: () => setFeedback(null),
+    feedback: activeFeedback,
+    dismissFeedback,
+    editingCategory,
+    setEditingCategory,
+    deletingCategory,
+    setDeletingCategory,
     applySavedCategory,
     removeCategory,
+    confirmDelete,
   };
 }

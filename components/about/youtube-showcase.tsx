@@ -1,22 +1,16 @@
 "use client";
 
-import * as React from "react";
 import { ExternalLink, Play } from "lucide-react";
 import { YouTubeIcon } from "@/components/icons/marketplace-icons";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
-import { STORE_CONFIG, YOUTUBE_SHOWCASE_VIDEOS } from "@/config/store";
+import { STORE_CONFIG } from "@/config/store";
+import { useYoutubeShowcase } from "@/hooks/about/use-youtube-showcase";
 import { cn } from "@/lib/utils";
 
 export function YoutubeShowcase() {
-  const [activeVideoId, setActiveVideoId] = React.useState<string>(
-    YOUTUBE_SHOWCASE_VIDEOS[0].id
-  );
-
-  const activeVideo =
-    YOUTUBE_SHOWCASE_VIDEOS.find((v) => v.id === activeVideoId) ??
-    YOUTUBE_SHOWCASE_VIDEOS[0];
+  const { videos, activeVideo, selectVideo } = useYoutubeShowcase();
 
   return (
     <section className="space-y-6">
@@ -95,16 +89,16 @@ export function YoutubeShowcase() {
         {/* Video Playlist Selector */}
         <div className="lg:col-span-4 space-y-3">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Daftar Video Pilihan ({YOUTUBE_SHOWCASE_VIDEOS.length})
+            Daftar Video Pilihan ({videos.length})
           </p>
           <div className="space-y-2.5">
-            {YOUTUBE_SHOWCASE_VIDEOS.map((video) => {
+            {videos.map((video) => {
               const isSelected = video.id === activeVideo.id;
               return (
                 <button
                   key={video.id}
                   type="button"
-                  onClick={() => setActiveVideoId(video.id)}
+                  onClick={() => selectVideo(video.id)}
                   className="w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-xl"
                 >
                   <Card

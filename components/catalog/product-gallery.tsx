@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import Image from "next/image";
 import {
   Carousel,
@@ -8,11 +7,11 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-  type CarouselApi,
 } from "@/components/ui/carousel";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { useProductGallery } from "@/hooks/catalog/use-product-gallery";
 import { cn } from "@/lib/utils";
-import type { ProductImage } from "@/data/products";
+import type { ProductImage } from "@/types/catalog";
 
 interface ProductGalleryProps {
   images: ProductImage[];
@@ -20,24 +19,7 @@ interface ProductGalleryProps {
 }
 
 export function ProductGallery({ images, productName }: ProductGalleryProps) {
-  const [api, setApi] = React.useState<CarouselApi>();
-  const [current, setCurrent] = React.useState(0);
-
-  React.useEffect(() => {
-    if (!api) return;
-    const onSelect = () => setCurrent(api.selectedScrollSnap());
-    api.on("select", onSelect);
-    api.on("reInit", onSelect);
-    return () => {
-      api.off("select", onSelect);
-      api.off("reInit", onSelect);
-    };
-  }, [api]);
-
-  const handleThumbClick = (index: number) => {
-    setCurrent(index);
-    api?.scrollTo(index);
-  };
+  const { setApi, current, selectSlide } = useProductGallery();
 
   return (
     <div className="space-y-3">
@@ -46,7 +28,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
           setApi={setApi}
           opts={{ loop: images.length > 1 }}
           className="w-full"
-          aria-label={`${productName} image gallery`}
+          aria-label={`Galeri foto ${productName}`}
         >
           <CarouselContent className="ml-0">
             {images.map((image, idx) => (
@@ -86,8 +68,8 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
             <button
               key={`${image.url}-thumb-${idx}`}
               type="button"
-              onClick={() => handleThumbClick(idx)}
-              aria-label={`Select ${image.label ?? `image ${idx + 1}`}`}
+              onClick={() => selectSlide(idx)}
+              aria-label={`Pilih ${image.label ?? `foto ${idx + 1}`}`}
               aria-current={idx === current ? "true" : undefined}
               className={cn(
                 "relative size-20 shrink-0 overflow-hidden rounded-lg border bg-muted transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",

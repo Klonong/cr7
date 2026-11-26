@@ -8,27 +8,54 @@ import {
 } from "@/lib/api/catalog-api";
 import { getErrorMessage } from "@/lib/api/client";
 import { computeCatalogStats, filterProducts } from "@/lib/catalog-filters";
-import type { CategorySlug, Product } from "@/types/catalog";
+import type { Category, CategorySlug, Product } from "@/types/catalog";
 
 export interface AdminFeedback {
   type: "success" | "error";
   message: string;
 }
 
-export function useAdminCatalog(initialProducts: Product[]) {
+export function useAdminCatalog(
+  initialProducts: Product[],
+  categories: Category[] = []
+) {
   const router = useRouter();
 
   const [products, setProducts] = React.useState<Product[]>(initialProducts);
   const [search, setSearch] = React.useState("");
-  const [categoryFilter, setCategoryFilter] = React.useState<"all" | CategorySlug>(
-    "all"
-  );
+  const [categoryFilter, setCategoryFilter] = React.useState<
+    "all" | CategorySlug
+  >("all");
   const [stockFilter, setStockFilter] = React.useState<"all" | "in" | "out">(
     "all"
   );
   const [togglingId, setTogglingId] = React.useState<string | null>(null);
   const [deleting, setDeleting] = React.useState(false);
   const [feedback, setFeedback] = React.useState<AdminFeedback | null>(null);
+
+  const [formOpen, setFormOpen] = React.useState(false);
+  const [editingProduct, setEditingProduct] = React.useState<Product | null>(
+    null
+  );
+  const [deletingProduct, setDeletingProduct] = React.useState<Product | null>(
+    null
+  );
+
+  const openCreateForm = React.useCallback(() => {
+    setEditingProduct(null);
+    setFormOpen(true);
+  }, []);
+
+  const openEditForm = React.useCallback((product: Product) => {
+    setEditingProduct(product);
+    setFormOpen(true);
+  }, []);
+
+  const clearFilters = React.useCallback(() => {
+    setSearch("");
+    setCategoryFilter("all");
+    setStockFilter("all");
+  }, []);
 
   const applySavedProduct = React.useCallback(
     (saved: Product, mode: "create" | "edit") => {
@@ -110,6 +137,12 @@ export function useAdminCatalog(initialProducts: Product[]) {
     [router]
   );
 
+  const confirmDelete = React.useCallback(async () => {
+    if (!deletingProduct) return;
+    await removeProduct(deletingProduct);
+    setDeletingProduct(null);
+  }, [deletingProduct, removeProduct]);
+
   const filteredProducts = React.useMemo(
     () =>
       filterProducts(products, {
@@ -122,6 +155,20 @@ export function useAdminCatalog(initialProducts: Product[]) {
 
   const stats = React.useMemo(() => computeCatalogStats(products), [products]);
 
+  const findCategory = React.useCallback(
+    (slug: string) => categories.find((c) => c.slug === slug),
+    [categories]
+  );
+
+  const selectedCategoryLabel =
+    categoryFilter === "all"
+      ? "Semua Kategori"
+      : (findCategory(categoryFilter)?.shortName ?? categoryFilter);
+
+  const hasActiveFilters = Boolean(
+    search.trim() || categoryFilter !== "all" || stockFilter !== "all"
+  );
+
   return {
     products,
     filteredProducts,
@@ -132,12 +179,24 @@ export function useAdminCatalog(initialProducts: Product[]) {
     setCategoryFilter,
     stockFilter,
     setStockFilter,
+    hasActiveFilters,
+    clearFilters,
     togglingId,
     deleting,
     feedback,
     clearFeedback: () => setFeedback(null),
+    formOpen,
+    setFormOpen,
+    editingProduct,
+    deletingProduct,
+    setDeletingProduct,
+    openCreateForm,
+    openEditForm,
     applySavedProduct,
     toggleStock,
     removeProduct,
+    confirmDelete,
+    findCategory,
+    selectedCategoryLabel,
   };
 }

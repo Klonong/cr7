@@ -1,7 +1,5 @@
 "use client";
 
-import * as React from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   AlertCircle,
@@ -24,33 +22,20 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { BrandLogo } from "@/components/shared/brand-logo";
-import { loginAdmin } from "@/lib/api/auth-api";
-import { getErrorMessage } from "@/lib/api/client";
+import { useAdminLogin } from "@/hooks/admin/use-admin-login";
 
 export function AdminLoginForm() {
-  const router = useRouter();
-  const [username, setUsername] = React.useState("");
-  const [password, setPassword] = React.useState("");
-  const [showPassword, setShowPassword] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-  const [loading, setLoading] = React.useState(false);
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
-
-    try {
-      await loginAdmin({ username, password });
-      router.replace("/admin");
-      router.refresh();
-    } catch (err) {
-      setError(
-        getErrorMessage(err, "Username atau password salah. Silakan coba lagi.")
-      );
-      setLoading(false);
-    }
-  };
+  const {
+    username,
+    setUsername,
+    password,
+    setPassword,
+    showPassword,
+    toggleShowPassword,
+    error,
+    loading,
+    handleSubmit,
+  } = useAdminLogin();
 
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center bg-background px-4 py-12">
@@ -138,7 +123,7 @@ export function AdminLoginForm() {
                   />
                   <button
                     type="button"
-                    onClick={() => setShowPassword((prev) => !prev)}
+                    onClick={toggleShowPassword}
                     aria-label={
                       showPassword ? "Sembunyikan password" : "Tampilkan password"
                     }

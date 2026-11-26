@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -18,57 +17,24 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  type CarouselApi,
 } from "@/components/ui/carousel";
+import { useSpotlightCarousel } from "@/hooks/catalog/use-spotlight-carousel";
+import { isExternalUrl } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { HomeHighlight } from "@/types/home";
-
-function isExternalUrl(href: string): boolean {
-  return href.startsWith("http://") || href.startsWith("https://");
-}
 
 interface SpotlightCarouselProps {
   highlights: HomeHighlight[];
 }
 
 export function SpotlightCarousel({ highlights }: SpotlightCarouselProps) {
-  const [api, setApi] = React.useState<CarouselApi>();
-  const [current, setCurrent] = React.useState(0);
-  const [paused, setPaused] = React.useState(false);
-
-  React.useEffect(() => {
-    if (!api) return;
-    const onSelect = () => setCurrent(api.selectedScrollSnap());
-    api.on("select", onSelect);
-    api.on("reInit", onSelect);
-    return () => {
-      api.off("select", onSelect);
-      api.off("reInit", onSelect);
-    };
-  }, [api]);
-
-  React.useEffect(() => {
-    if (!api || highlights.length <= 1 || paused) return;
-    const prefersReduced =
-      typeof window !== "undefined" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReduced) return;
-
-    const timer = window.setInterval(() => {
-      api.scrollNext();
-    }, 6000);
-
-    return () => window.clearInterval(timer);
-  }, [api, highlights.length, paused]);
+  const { setApi, current, scrollPrev, scrollNext, scrollTo, pause, resume } =
+    useSpotlightCarousel(highlights.length);
 
   if (highlights.length === 0) return null;
 
   return (
-    <div
-      className="space-y-4"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-    >
+    <div className="space-y-4" onMouseEnter={pause} onMouseLeave={resume}>
       {/* Section Header + Carousel Controls */}
       <div className="flex items-end justify-between gap-4">
         <div className="space-y-1">
@@ -90,7 +56,7 @@ export function SpotlightCarousel({ highlights }: SpotlightCarouselProps) {
               type="button"
               variant="outline"
               size="icon"
-              onClick={() => api?.scrollPrev()}
+              onClick={scrollPrev}
               aria-label="Sorotan sebelumnya"
               className="size-9 rounded-full"
             >
@@ -100,7 +66,7 @@ export function SpotlightCarousel({ highlights }: SpotlightCarouselProps) {
               type="button"
               variant="outline"
               size="icon"
-              onClick={() => api?.scrollNext()}
+              onClick={scrollNext}
               aria-label="Sorotan berikutnya"
               className="size-9 rounded-full"
             >
@@ -221,7 +187,7 @@ export function SpotlightCarousel({ highlights }: SpotlightCarouselProps) {
               role="tab"
               aria-selected={idx === current}
               aria-label={`Tampilkan sorotan ${idx + 1}: ${hl.title}`}
-              onClick={() => api?.scrollTo(idx)}
+              onClick={() => scrollTo(idx)}
               className={cn(
                 "h-2 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 idx === current

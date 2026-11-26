@@ -1,9 +1,14 @@
 "use client";
 
-import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, Layers, ShieldCheck, Wrench } from "lucide-react";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Layers,
+  ShieldCheck,
+  Wrench,
+} from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -16,8 +21,8 @@ import { Separator } from "@/components/ui/separator";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { buttonVariants } from "@/components/ui/button";
 import { MarketplaceCta } from "@/components/catalog/marketplace-cta";
-import { formatPrice, getDiscountPercent } from "@/lib/format";
-import { getCategoryBySlug } from "@/data/categories";
+import { useProductVariant } from "@/hooks/catalog/use-product-variant";
+import { formatPrice } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/types/catalog";
 
@@ -32,37 +37,22 @@ export function ProductQuickView({
   open,
   onOpenChange,
 }: ProductQuickViewProps) {
-  const [selection, setSelection] = React.useState<{
-    id: string;
-    imgIdx: number;
-    variantId: string | null;
-  }>({ id: "", imgIdx: 0, variantId: null });
+  const {
+    variants,
+    selectedVariantId,
+    selectedVariant,
+    selectVariant,
+    activeImageIdx,
+    activeImage,
+    selectImage,
+    category,
+    displayPrice,
+    displaySku,
+    isAvailable,
+    discount,
+  } = useProductVariant(product);
 
-  if (!product) return null;
-
-  const variants = product.variants ?? [];
-  const activeImageIdx = selection.id === product.id ? selection.imgIdx : 0;
-  const selectedVariantId =
-    selection.id === product.id
-      ? selection.variantId
-      : (variants[0]?.id ?? null);
-  const selectedVariant =
-    variants.find((v) => v.id === selectedVariantId) ?? null;
-
-  const setActiveImageIdx = (imgIdx: number) =>
-    setSelection({ id: product.id, imgIdx, variantId: selectedVariantId });
-
-  const setSelectedVariantId = (variantId: string) =>
-    setSelection({ id: product.id, imgIdx: activeImageIdx, variantId });
-
-  const category = getCategoryBySlug(product.category);
-  const displayPrice = selectedVariant?.price ?? product.price;
-  const displaySku = selectedVariant?.sku ?? product.sku;
-  const discount = getDiscountPercent(displayPrice, product.originalPrice);
-  const activeImage = product.images[activeImageIdx] ?? product.images[0];
-  const isAvailable = selectedVariant
-    ? product.inStock && selectedVariant.inStock
-    : product.inStock;
+  if (!product || !activeImage) return null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -93,7 +83,7 @@ export function ProductQuickView({
                   <button
                     key={`${img.url}-${idx}`}
                     type="button"
-                    onClick={() => setActiveImageIdx(idx)}
+                    onClick={() => selectImage(idx)}
                     aria-label={`Lihat ${img.label ?? `gambar ${idx + 1}`}`}
                     className={cn(
                       "relative size-14 overflow-hidden rounded-md border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
@@ -163,7 +153,10 @@ export function ProductQuickView({
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-xs">
                     <span className="inline-flex items-center gap-1.5 font-semibold text-foreground">
-                      <Layers className="size-3.5 text-primary" aria-hidden="true" />
+                      <Layers
+                        className="size-3.5 text-primary"
+                        aria-hidden="true"
+                      />
                       <span>Pilih Varian</span>
                     </span>
                     {selectedVariant && (
@@ -179,7 +172,7 @@ export function ProductQuickView({
                         <button
                           key={v.id}
                           type="button"
-                          onClick={() => setSelectedVariantId(v.id)}
+                          onClick={() => selectVariant(v.id)}
                           className={cn(
                             "inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                             active

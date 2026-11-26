@@ -11,7 +11,7 @@ import type {
   SortOption,
 } from "@/types/catalog";
 
-interface UseProductFiltersOptions {
+export interface UseProductFiltersOptions {
   products: readonly Product[];
   categories: readonly Category[];
   initialCategory?: CategorySlug | null;

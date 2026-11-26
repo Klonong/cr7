@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeProvider } from "@/components/providers/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { StorefrontShell } from "@/components/layout/storefront-shell";
 import "./globals.css";
@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "CR7 Racing — Katalog Resmi Aksesoris & Part Motor",
+    default: "CR7 Racing — Katalog Resmi Aksesori & Lampu Motor",
     template: "%s | CR7 Racing",
   },
   description:

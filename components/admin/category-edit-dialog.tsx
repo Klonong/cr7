@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import { AlertCircle, Loader2, Save } from "lucide-react";
 import {
   Dialog,
@@ -14,9 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { updateCatalogCategory } from "@/lib/api/category-api";
-import { getErrorMessage } from "@/lib/api/client";
-import { validateCategoryInput } from "@/lib/validation/category";
+import { useCategoryEditForm } from "@/hooks/admin/use-category-form";
 import type { Category } from "@/types/catalog";
 
 interface CategoryEditDialogProps {
@@ -57,43 +54,10 @@ function CategoryEditFormInner({
   onClose: () => void;
   onSaved: (category: Category, mode: "create" | "edit") => void;
 }) {
-  const [name, setName] = React.useState(category.name);
-  const [shortName, setShortName] = React.useState(category.shortName);
-  const [description, setDescription] = React.useState(category.description);
-  const [submitting, setSubmitting] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError(null);
-
-    const validation = validateCategoryInput({
-      name,
-      shortName,
-      slug: category.slug,
-      description,
-    });
-    if (!validation.ok) {
-      setError(validation.error);
-      return;
-    }
-
-    setSubmitting(true);
-    try {
-      const updated = await updateCatalogCategory(
-        category.slug,
-        validation.data
-      );
-      onSaved(updated, "edit");
-      onClose();
-    } catch (err) {
-      setError(getErrorMessage(err, "Gagal memperbarui kategori."));
-      setSubmitting(false);
-    }
-  };
+  const form = useCategoryEditForm({ category, onClose, onSaved });
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col">
+    <form onSubmit={form.handleSubmit} className="flex flex-col">
       <DialogHeader className="border-b border-border px-6 py-4 text-left">
         <DialogTitle className="text-lg font-bold">
           Edit Kategori · {category.shortName}
@@ -104,7 +68,7 @@ function CategoryEditFormInner({
       </DialogHeader>
 
       <div className="px-6 py-5 space-y-4">
-        {error && (
+        {form.error && (
           <div
             role="alert"
             className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3.5 py-2.5 text-xs font-medium text-destructive"
@@ -113,7 +77,7 @@ function CategoryEditFormInner({
               className="size-4 shrink-0 mt-0.5"
               aria-hidden="true"
             />
-            <span>{error}</span>
+            <span>{form.error}</span>
           </div>
         )}
 
@@ -124,8 +88,8 @@ function CategoryEditFormInner({
           <Input
             id="edit-cat-name"
             required
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            value={form.name}
+            onChange={(e) => form.setName(e.target.value)}
           />
         </div>
 
@@ -137,8 +101,8 @@ function CategoryEditFormInner({
             id="edit-cat-short"
             required
             maxLength={22}
-            value={shortName}
-            onChange={(e) => setShortName(e.target.value)}
+            value={form.shortName}
+            onChange={(e) => form.setShortName(e.target.value)}
           />
         </div>
 
@@ -151,8 +115,8 @@ function CategoryEditFormInner({
             required
             rows={3}
             maxLength={140}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            value={form.description}
+            onChange={(e) => form.setDescription(e.target.value)}
           />
         </div>
       </div>
@@ -162,12 +126,12 @@ function CategoryEditFormInner({
           type="button"
           variant="outline"
           onClick={onClose}
-          disabled={submitting}
+          disabled={form.submitting}
         >
           Batal
         </Button>
-        <Button type="submit" disabled={submitting} className="gap-1.5">
-          {submitting ? (
+        <Button type="submit" disabled={form.submitting} className="gap-1.5">
+          {form.submitting ? (
             <>
               <Loader2 className="size-4 animate-spin" aria-hidden="true" />
               <span>Menyimpan...</span>

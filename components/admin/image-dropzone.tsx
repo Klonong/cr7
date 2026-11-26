@@ -1,11 +1,9 @@
 "use client";
 
-import * as React from "react";
 import Image from "next/image";
 import { AlertCircle, ImagePlus, Loader2, UploadCloud, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { uploadAdminImage } from "@/lib/api/upload-api";
-import { getErrorMessage } from "@/lib/api/client";
+import { useImageDropzone } from "@/hooks/admin/use-image-dropzone";
 import { cn } from "@/lib/utils";
 
 interface ImagePreset {
@@ -30,49 +28,20 @@ export function ImageDropzone({
   fallbackSrc = "/images/prod-biled-projector.svg",
   previewAspect = "square",
 }: ImageDropzoneProps) {
-  const inputRef = React.useRef<HTMLInputElement>(null);
-  const [dragging, setDragging] = React.useState(false);
-  const [uploading, setUploading] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-
-  const handleFile = React.useCallback(
-    async (file: File) => {
-      setError(null);
-      setUploading(true);
-      try {
-        const uploadedUrl = await uploadAdminImage(file);
-        onChange(uploadedUrl);
-      } catch (err) {
-        setError(getErrorMessage(err, "Gagal mengunggah gambar."));
-      } finally {
-        setUploading(false);
-      }
-    },
-    [onChange]
-  );
-
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragging(false);
-    const file = e.dataTransfer.files?.[0];
-    if (file) {
-      void handleFile(file);
-    }
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      void handleFile(file);
-    }
-    e.target.value = "";
-  };
-
-  const previewUrl =
-    value.trim().startsWith("/") || value.trim().startsWith("http")
-      ? value.trim()
-      : fallbackSrc;
+  const {
+    inputRef,
+    dragging,
+    uploading,
+    error,
+    previewUrl,
+    openFilePicker,
+    handleKeyDown,
+    handleDragOver,
+    handleDragLeave,
+    handleDrop,
+    handleInputChange,
+    handleReset,
+  } = useImageDropzone({ value, fallbackSrc, onChange });
 
   return (
     <div className="space-y-3">
@@ -80,23 +49,10 @@ export function ImageDropzone({
       <div
         role="button"
         tabIndex={0}
-        onClick={() => !uploading && inputRef.current?.click()}
-        onKeyDown={(e) => {
-          if ((e.key === "Enter" || e.key === " ") && !uploading) {
-            e.preventDefault();
-            inputRef.current?.click();
-          }
-        }}
-        onDragOver={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          setDragging(true);
-        }}
-        onDragLeave={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          setDragging(false);
-        }}
+        onClick={openFilePicker}
+        onKeyDown={handleKeyDown}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         className={cn(
           "relative flex flex-col sm:flex-row items-center gap-4 rounded-xl border-2 border-dashed p-4 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
@@ -140,7 +96,10 @@ export function ImageDropzone({
           <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-foreground">
             {dragging ? (
               <>
-                <UploadCloud className="size-4 text-primary" aria-hidden="true" />
+                <UploadCloud
+                  className="size-4 text-primary"
+                  aria-hidden="true"
+                />
                 <span>Lepaskan file gambar untuk mengunggah...</span>
               </>
             ) : (
@@ -164,10 +123,7 @@ export function ImageDropzone({
         {value && value !== fallbackSrc && (
           <button
             type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onChange(fallbackSrc);
-            }}
+            onClick={handleReset}
             aria-label="Reset ke gambar default"
             className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
           >

@@ -1,18 +1,15 @@
 "use client";
 
-import * as React from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import {
-  CheckCircle2,
   ExternalLink,
   FolderPlus,
   FolderTree,
   Pencil,
+  RotateCcw,
   Search,
   Tag,
   Trash2,
-  X,
 } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,8 +26,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { AdminHeader } from "@/components/admin/admin-header";
+import { AdminFeedbackBanner } from "@/components/admin/admin-feedback-banner";
 import { CategoryEditDialog } from "@/components/admin/category-edit-dialog";
-import { useAdminCategories } from "@/hooks/use-admin-categories";
+import { useAdminCategories } from "@/hooks/admin/use-admin-categories";
 import { cn } from "@/lib/utils";
 import type { Category, Product } from "@/types/catalog";
 
@@ -45,33 +43,9 @@ export function CategoriesManager({
   products,
   username,
 }: CategoriesManagerProps) {
-  const searchParams = useSearchParams();
-  const createdName = searchParams.get("created");
-
-  const catState = useAdminCategories(initialCategories);
-  const [editingCategory, setEditingCategory] =
-    React.useState<Category | null>(null);
-  const [deletingCategory, setDeletingCategory] =
-    React.useState<Category | null>(null);
-  const [dismissedCreated, setDismissedCreated] = React.useState(false);
-
-  const productCounts = React.useMemo(() => {
-    const map = new Map<string, number>();
-    for (const p of products) {
-      map.set(p.category, (map.get(p.category) ?? 0) + 1);
-    }
-    return map;
-  }, [products]);
-
-  const populatedCount = catState.categories.filter(
-    (c) => (productCounts.get(c.slug) ?? 0) > 0
-  ).length;
-
-  const handleConfirmDelete = async () => {
-    if (!deletingCategory) return;
-    await catState.removeCategory(deletingCategory);
-    setDeletingCategory(null);
-  };
+  const catState = useAdminCategories(initialCategories, products);
+  const deletingCount =
+    catState.productCounts.get(catState.deletingCategory?.slug ?? "") ?? 0;
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -85,7 +59,7 @@ export function CategoriesManager({
               Struktur Katalog
             </p>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-              Kategori Aksesoris Motor
+              Kategori Aksesori Motor
             </h1>
             <p className="text-sm text-muted-foreground">
               Kelola kategori produk CR7 Racing. Buat kategori baru, ubah nama
@@ -121,7 +95,7 @@ export function CategoriesManager({
               Kategori Berisi Produk
             </p>
             <p className="font-mono text-2xl font-extrabold tabular-nums text-status-success">
-              {populatedCount}
+              {catState.populatedCount}
             </p>
           </Card>
 
@@ -130,7 +104,7 @@ export function CategoriesManager({
               Kategori Kosong
             </p>
             <p className="font-mono text-2xl font-extrabold tabular-nums text-foreground">
-              {catState.categories.length - populatedCount}
+              {catState.categories.length - catState.populatedCount}
             </p>
           </Card>
 
@@ -144,55 +118,10 @@ export function CategoriesManager({
           </Card>
         </div>
 
-        {/* Created Redirect Success Banner */}
-        {createdName && !dismissedCreated && !catState.feedback && (
-          <div
-            role="status"
-            className="flex items-center justify-between gap-3 rounded-lg border border-status-success/30 bg-status-success/10 px-4 py-3 text-sm font-medium text-status-success"
-          >
-            <span className="inline-flex items-center gap-2">
-              <CheckCircle2 className="size-4 shrink-0" aria-hidden="true" />
-              <span>
-                Kategori baru &ldquo;{createdName}&rdquo; berhasil dibuat dan
-                tampil di toko.
-              </span>
-            </span>
-            <button
-              type="button"
-              onClick={() => setDismissedCreated(true)}
-              aria-label="Tutup notifikasi"
-              className="rounded p-1 hover:bg-black/5 dark:hover:bg-white/10"
-            >
-              <X className="size-4" aria-hidden="true" />
-            </button>
-          </div>
-        )}
-
-        {/* Action Feedback Banner */}
-        {catState.feedback && (
-          <div
-            role="status"
-            className={cn(
-              "flex items-center justify-between gap-3 rounded-lg border px-4 py-3 text-sm font-medium",
-              catState.feedback.type === "success"
-                ? "border-status-success/30 bg-status-success/10 text-status-success"
-                : "border-destructive/30 bg-destructive/10 text-destructive"
-            )}
-          >
-            <span className="inline-flex items-center gap-2">
-              <CheckCircle2 className="size-4 shrink-0" aria-hidden="true" />
-              <span>{catState.feedback.message}</span>
-            </span>
-            <button
-              type="button"
-              onClick={catState.clearFeedback}
-              aria-label="Tutup notifikasi"
-              className="rounded p-1 hover:bg-black/5 dark:hover:bg-white/10"
-            >
-              <X className="size-4" aria-hidden="true" />
-            </button>
-          </div>
-        )}
+        <AdminFeedbackBanner
+          feedback={catState.feedback}
+          onDismiss={catState.dismissFeedback}
+        />
 
         {/* Search Toolbar */}
         <div className="relative max-w-md">
@@ -222,11 +151,23 @@ export function CategoriesManager({
             <p className="mt-1 text-sm text-muted-foreground">
               Coba kata kunci lain atau buat kategori baru.
             </p>
+            {catState.search.trim() && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => catState.setSearch("")}
+                className="mt-4 gap-1.5"
+              >
+                <RotateCcw className="size-3.5" aria-hidden="true" />
+                <span>Reset Pencarian</span>
+              </Button>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {catState.filteredCategories.map((category) => {
-              const count = productCounts.get(category.slug) ?? 0;
+              const count = catState.productCounts.get(category.slug) ?? 0;
               return (
                 <Card
                   key={category.slug}
@@ -275,7 +216,7 @@ export function CategoriesManager({
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={() => setEditingCategory(category)}
+                        onClick={() => catState.setEditingCategory(category)}
                         className="h-8 gap-1.5 px-3 text-xs"
                       >
                         <Pencil className="size-3" aria-hidden="true" />
@@ -285,7 +226,7 @@ export function CategoriesManager({
                         type="button"
                         variant="ghost"
                         size="icon-sm"
-                        onClick={() => setDeletingCategory(category)}
+                        onClick={() => catState.setDeletingCategory(category)}
                         aria-label={`Hapus ${category.name}`}
                         className="text-destructive hover:text-destructive hover:bg-destructive/10"
                       >
@@ -302,34 +243,34 @@ export function CategoriesManager({
 
       {/* Edit Modal */}
       <CategoryEditDialog
-        open={Boolean(editingCategory)}
+        open={Boolean(catState.editingCategory)}
         onOpenChange={(open) => {
-          if (!open) setEditingCategory(null);
+          if (!open) catState.setEditingCategory(null);
         }}
-        category={editingCategory}
+        category={catState.editingCategory}
         onSaved={catState.applySavedCategory}
       />
 
       {/* Delete Confirmation */}
       <AlertDialog
-        open={Boolean(deletingCategory)}
+        open={Boolean(catState.deletingCategory)}
         onOpenChange={(open) => {
-          if (!open) setDeletingCategory(null);
+          if (!open) catState.setDeletingCategory(null);
         }}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Hapus kategori ini?</AlertDialogTitle>
             <AlertDialogDescription>
-              {(productCounts.get(deletingCategory?.slug ?? "") ?? 0) > 0 ? (
+              {deletingCount > 0 ? (
                 <>
                   Kategori{" "}
                   <strong className="text-foreground">
-                    {deletingCategory?.name}
+                    {catState.deletingCategory?.name}
                   </strong>{" "}
                   masih digunakan oleh{" "}
                   <strong className="text-foreground">
-                    {productCounts.get(deletingCategory?.slug ?? "")} produk
+                    {deletingCount} produk
                   </strong>
                   . Pindahkan atau hapus produk terkait terlebih dahulu.
                 </>
@@ -337,10 +278,13 @@ export function CategoriesManager({
                 <>
                   Kategori{" "}
                   <strong className="text-foreground">
-                    {deletingCategory?.name}
+                    {catState.deletingCategory?.name}
                   </strong>{" "}
-                  (<span className="font-mono">{deletingCategory?.slug}</span>)
-                  akan dihapus secara permanen.
+                  (
+                  <span className="font-mono">
+                    {catState.deletingCategory?.slug}
+                  </span>
+                  ) akan dihapus secara permanen.
                 </>
               )}
             </AlertDialogDescription>
@@ -349,10 +293,10 @@ export function CategoriesManager({
             <AlertDialogCancel disabled={catState.deleting}>
               Batal
             </AlertDialogCancel>
-            {(productCounts.get(deletingCategory?.slug ?? "") ?? 0) === 0 && (
+            {deletingCount === 0 && (
               <AlertDialogAction
                 variant="destructive"
-                onClick={handleConfirmDelete}
+                onClick={catState.confirmDelete}
                 disabled={catState.deleting}
               >
                 {catState.deleting ? "Menghapus..." : "Hapus Kategori"}

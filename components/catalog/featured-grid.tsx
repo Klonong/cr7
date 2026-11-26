@@ -1,9 +1,9 @@
 "use client";
 
-import * as React from "react";
 import { ProductCard } from "@/components/catalog/product-card";
 import { ProductQuickView } from "@/components/catalog/product-quick-view";
-import type { Product } from "@/data/products";
+import { useQuickView } from "@/hooks/catalog/use-quick-view";
+import type { Product } from "@/types/catalog";
 
 interface FeaturedGridProps {
   products: Product[];
@@ -11,8 +11,8 @@ interface FeaturedGridProps {
 }
 
 export function FeaturedGrid({ products, columns = 4 }: FeaturedGridProps) {
-  const [quickViewProduct, setQuickViewProduct] =
-    React.useState<Product | null>(null);
+  const { quickViewProduct, isOpen, openQuickView, handleOpenChange } =
+    useQuickView();
 
   return (
     <>
@@ -28,17 +28,15 @@ export function FeaturedGrid({ products, columns = 4 }: FeaturedGridProps) {
             key={product.id}
             product={product}
             priority={index < 4}
-            onQuickView={(p) => setQuickViewProduct(p)}
+            onQuickView={openQuickView}
           />
         ))}
       </div>
 
       <ProductQuickView
         product={quickViewProduct}
-        open={Boolean(quickViewProduct)}
-        onOpenChange={(open) => {
-          if (!open) setQuickViewProduct(null);
-        }}
+        open={isOpen}
+        onOpenChange={handleOpenChange}
       />
     </>
   );

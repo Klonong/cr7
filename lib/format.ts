@@ -66,3 +66,7 @@ export function parseNewlineList(raw: string): string[] {
     .map((item) => item.trim())
     .filter(Boolean);
 }
+
+export function isExternalUrl(href: string): boolean {
+  return href.startsWith("http://") || href.startsWith("https://");
+}

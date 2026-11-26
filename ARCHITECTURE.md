@@ -92,20 +92,45 @@ lib/
     ├── home-service.ts         # Next.js 16 "use cache" reads + revalidateHomeContent()
     └── admin-auth.ts           # Signed HttpOnly cookie auth + requireAdminApiSession() (SWAP POINT #5)
 
-hooks/                          # Reusable stateful React hooks
-├── use-product-filters.ts      # Storefront catalog filtering & sorting
-├── use-admin-catalog.ts        # Admin CRUD state, optimistic stock toggle & KPI stats
-├── use-admin-categories.ts     # Admin categories CRUD hook
-└── use-admin-home.ts           # Admin Home settings & Highlights CRUD hook
+hooks/                          # ALL client-side state, effects, forms & API logic (organized by domain)
+├── shared/
+│   └── use-theme.ts            # Theme external store, DOM syncing, ThemeContext & useTheme()
+├── layout/
+│   ├── use-route-flags.ts      # StorefrontShell & FloatingWhatsApp route matching
+│   ├── use-navbar.ts           # Mobile drawer state & live category sync
+│   └── use-command-search.ts   # Ctrl+K shortcut, live catalog/category/motorcycle search & nav
+├── about/
+│   └── use-youtube-showcase.ts # Active YouTube showcase video selection
+├── catalog/
+│   ├── use-product-filters.ts  # Storefront catalog filtering & sorting
+│   ├── use-catalog-browser.ts  # URL search param sync, filters, mobile sheet & quick-view state
+│   ├── use-product-variant.ts  # Shared variant selection, active SKU/price/stock & image selection
+│   ├── use-product-gallery.ts  # Embla carousel API & thumbnail selection
+│   ├── use-product-card.ts     # Hover secondary image preview & card metadata derivation
+│   ├── use-quick-view.ts       # Shared quick-view dialog state
+│   └── use-spotlight-carousel.ts # Embla carousel, reduced-motion auto-advance & hover pause
+└── admin/
+    ├── use-admin-header.ts     # Active route detection & logout flow
+    ├── use-admin-login.ts      # Login credentials, visibility toggle & submission
+    ├── use-admin-catalog.ts    # Product CRUD, optimistic stock toggle, filters & modals
+    ├── use-admin-categories.ts # Category CRUD, product counts, search & banners
+    ├── use-admin-motorcycles.ts # Motorcycle CRUD, compatibility counts & banners
+    ├── use-admin-home.ts       # Home settings draft state & Spotlight Highlights CRUD
+    ├── use-product-form.ts     # Product create/edit form, variants editor & validation
+    ├── use-category-form.ts    # Category create & edit form hooks
+    ├── use-motorcycle-form.ts  # Motorcycle create form & duplicate validation
+    ├── use-highlight-form.ts   # Highlight create/edit modal form & validation
+    └── use-image-dropzone.ts   # Drag-and-drop file upload, keyboard access & preview state
 
-components/
+components/                     # Purely presentational TSX components (zero inline state/effects)
 ├── ui/                         # shadcn/ui primitives (including Carousel)
+├── providers/                  # ThemeProvider
 ├── shared/                     # BrandLogo, ThemeToggle, OfficialStoreLinks, FloatingWhatsApp
-├── icons/                      # ShopeeIcon, TikTokShopIcon
+├── icons/                      # ShopeeIcon, TikTokShopIcon, YouTubeIcon, InstagramIcon, FacebookIcon, TikTokIcon, WhatsAppIcon
 ├── layout/                     # Navbar, Footer, CommandSearch, StorefrontShell
 ├── about/                      # YouTubeShowcase (channel CTA + interactive YouTube embed player)
 ├── catalog/                    # ProductCard, MarketplaceCta, ProductQuickView, ProductDetailPurchase, ProductGallery, CatalogBrowser, SpotlightCarousel
-└── admin/                      # AdminHeader, AdminOverview, AdminLoginForm, AdminDashboard, ProductFormDialog, ImageDropzone, CategoriesManager, CategoryCreateView, MotorcyclesManager, MotorcycleCreateView, HomeSettingsManager, HighlightFormDialog
+└── admin/                      # AdminHeader, AdminFeedbackBanner, AdminOverview, AdminLoginForm, AdminDashboard, ProductFormDialog, ImageDropzone, CategoriesManager, CategoryCreateView, CategoryEditDialog, MotorcyclesManager, MotorcycleCreateView, HomeSettingsManager, HighlightFormDialog
 ```
 
 ---
