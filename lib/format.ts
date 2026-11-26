@@ -1,4 +1,4 @@
-import type { CurrencyCode } from "@/types/catalog";
+import type { CurrencyCode } from "@/interface/catalog";
 
 export { STORE_CONFIG } from "@/config/store";
 

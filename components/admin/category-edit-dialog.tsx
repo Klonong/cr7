@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useCategoryEditForm } from "@/hooks/admin/use-category-form";
-import type { Category } from "@/types/catalog";
+import type { Category } from "@/interface/catalog";
 
 interface CategoryEditDialogProps {
   open: boolean;

@@ -1,16 +1,6 @@
-import { jsonCategoryRepository } from "@/lib/server/json-category-repository";
-import type { Category, CategoryInput } from "@/types/catalog";
+import { prismaCategoryRepository } from "@/lib/server/prisma-category-repository";
+import type { CategoryRepository } from "@/interface/repository";
 
-/**
- * Backend-agnostic data access contract for Motorcycle Accessory Categories.
- * Swap jsonCategoryRepository with your DB repository when implementing backend logic.
- */
-export interface CategoryRepository {
-  findAll(): Promise<Category[]>;
-  findBySlug(slug: string): Promise<Category | null>;
-  create(input: CategoryInput): Promise<Category>;
-  update(slug: string, input: CategoryInput): Promise<Category | null>;
-  delete(slug: string): Promise<boolean>;
-}
+export type { CategoryRepository };
 
-export const categoryRepository: CategoryRepository = jsonCategoryRepository;
+export const categoryRepository: CategoryRepository = prismaCategoryRepository;

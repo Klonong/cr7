@@ -3,13 +3,13 @@ import type {
   DeleteResponse,
   HighlightMutationResponse,
   HomeContentResponse,
-} from "@/types/api";
+} from "@/interface/api";
 import type {
   HomeContent,
   HomeHighlight,
   HomeHighlightInput,
   HomeSettingsInput,
-} from "@/types/home";
+} from "@/interface/home";
 
 export async function fetchAdminHomeContent(): Promise<HomeContent> {
   const data = await apiFetch<HomeContentResponse>("/api/admin/home");

@@ -42,11 +42,11 @@ import { AdminHeader } from "@/components/admin/admin-header";
 import { AdminFeedbackBanner } from "@/components/admin/admin-feedback-banner";
 import { HighlightFormDialog } from "@/components/admin/highlight-form-dialog";
 import { ImageDropzone } from "@/components/admin/image-dropzone";
-import { HERO_IMAGE_PRESETS } from "@/data/home-defaults";
+import { HERO_IMAGE_PRESETS } from "@/config/store";
 import { useAdminHome } from "@/hooks/admin/use-admin-home";
 import { cn } from "@/lib/utils";
-import type { Product } from "@/types/catalog";
-import type { HomeContent, TrustIconName } from "@/types/home";
+import type { Product } from "@/interface/catalog";
+import type { HomeContent, TrustIconName } from "@/interface/home";
 
 const TRUST_ICON_OPTIONS: { value: TrustIconName; label: string }[] = [
   { value: "shield", label: "Perisai (Original)" },

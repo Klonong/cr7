@@ -3,21 +3,15 @@
 import * as React from "react";
 import { filterProducts, sortProducts } from "@/lib/catalog-filters";
 import type {
-  Category,
   CategorySlug,
   MarketplaceFilter,
-  Product,
   ProductBadge,
   SortOption,
-} from "@/types/catalog";
+} from "@/interface/catalog";
 
-export interface UseProductFiltersOptions {
-  products: readonly Product[];
-  categories: readonly Category[];
-  initialCategory?: CategorySlug | null;
-  initialBike?: string;
-  initialQuery?: string;
-}
+import type { UseProductFiltersOptions } from "@/interface/hooks";
+
+export type { UseProductFiltersOptions };
 
 export function useProductFilters({
   products,

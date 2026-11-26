@@ -64,7 +64,7 @@ export function ImageDropzone({
         <input
           ref={inputRef}
           type="file"
-          accept="image/png,image/jpeg,image/webp,image/svg+xml"
+          accept="image/png,image/jpeg,image/webp"
           onChange={handleInputChange}
           className="hidden"
           aria-label="Pilih file gambar dari perangkat"
@@ -111,7 +111,7 @@ export function ImageDropzone({
           </p>
           <p className="text-[11px] text-muted-foreground">
             Seret &amp; lepas file (Drag &amp; Drop) atau klik untuk memilih
-            file · JPG, PNG, WebP, SVG (Maks. 5 MB)
+            file · JPG, PNG, WebP (Maks. 5 MB)
           </p>
           {value && (
             <p className="truncate font-mono text-[10px] text-muted-foreground">

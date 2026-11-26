@@ -2,7 +2,7 @@
 
 import { AlertCircle, CheckCircle2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { AdminFeedback } from "@/hooks/admin/use-admin-catalog";
+import type { AdminFeedback } from "@/interface/hooks";
 
 interface AdminFeedbackBannerProps {
   feedback: AdminFeedback | null;

@@ -1,11 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { getCategoryBySlug } from "@/data/categories";
 import { getDiscountPercent } from "@/lib/format";
-import type { Product } from "@/types/catalog";
+import type { Category, Product } from "@/interface/catalog";
 
-export function useProductVariant(product: Product | null) {
+export function useProductVariant(
+  product: Product | null,
+  categories?: Category[]
+) {
   const [selection, setSelection] = React.useState<{
     id: string;
     imgIdx: number;
@@ -41,7 +43,9 @@ export function useProductVariant(product: Product | null) {
     [product, activeImageIdx]
   );
 
-  const category = product ? getCategoryBySlug(product.category) : undefined;
+  const category = product
+    ? categories?.find((c) => c.slug === product.category)
+    : undefined;
   const displayPrice = selectedVariant?.price ?? product?.price ?? 0;
   const displaySku = selectedVariant?.sku ?? product?.sku ?? "";
   const isAvailable = product

@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { requireAdminApiSession } from "@/lib/server/admin-auth";
+import { logSecurityEvent } from "@/lib/server/audit-log";
 import { homeRepository } from "@/lib/server/home-repository";
 import { revalidateHomeContent } from "@/lib/server/home-service";
+import { getClientIp } from "@/lib/server/rate-limit";
 import { validateHomeSettingsInput } from "@/lib/validation/home";
 
 export async function GET() {
@@ -13,7 +15,7 @@ export async function GET() {
 }
 
 export async function PUT(request: Request) {
-  const auth = await requireAdminApiSession();
+  const auth = await requireAdminApiSession({ request });
   if (auth.response) return auth.response;
 
   try {
@@ -25,10 +27,19 @@ export async function PUT(request: Request) {
 
     const content = await homeRepository.updateSettings(validated.data);
     revalidateHomeContent();
+
+    logSecurityEvent({
+      event: "ADMIN_HOME_MUTATION",
+      actor: auth.session.username,
+      ip: getClientIp(request),
+      target: "home_settings",
+      detail: "action=update_settings",
+    });
+
     return NextResponse.json({ content });
   } catch {
     return NextResponse.json(
-      { error: "Failed to save home settings." },
+      { error: "Gagal menyimpan pengaturan beranda." },
       { status: 500 }
     );
   }

@@ -1,13 +1,63 @@
-import type {
-  Product,
-  ProductBadge,
-  ProductImage,
-  ProductVariant,
-} from "@/types/catalog";
+import type { Category, Motorcycle, Product } from "../interface/catalog";
+import type { HomeContent } from "../interface/home";
 
-export type { Product, ProductBadge, ProductImage, ProductVariant };
+export const SEED_CATEGORIES: Category[] = [
+  {
+    slug: "led-headlights",
+    name: "Lampu Depan & Projector LED",
+    shortName: "Lampu LED",
+    description:
+      "Bi-LED projector, lampu tembak SQL laser, dan optik cutoff rata anti silau.",
+  },
+  {
+    slug: "signals-tail-lights",
+    name: "Sein, DRL & Stoplamp LED",
+    shortName: "Sein & Stoplamp",
+    description:
+      "Sein running smoke, stoplamp 3-in-1 twin blade, dan modul hazard.",
+  },
+  {
+    slug: "controls-cockpit",
+    name: "Kokpit & Kontrol CNC",
+    shortName: "Kokpit & CNC",
+    description:
+      "Handle rem CNC 6 klik, saklar waterproof 3 mode, dan spion bar-end anti silau.",
+  },
+  {
+    slug: "protection-body",
+    name: "Pelindung & Body Armor",
+    shortName: "Proteksi",
+    description:
+      "Frame slider CNC Delrin, crash bar mesin, dan pelindung bodi motor.",
+  },
+  {
+    slug: "touring-mounts",
+    name: "Touring & Holder HP",
+    shortName: "Touring",
+    description:
+      "Holder HP CNC anti getar dengan pengisian cepat USB-C tahan air.",
+  },
+  {
+    slug: "electrical-relays",
+    name: "Kelistrikan & Relay Set",
+    shortName: "Kelistrikan",
+    description:
+      "Kabel relay set waterproof 40A, konektor kedap air, dan pengaman sekring.",
+  },
+];
 
-export const PRODUCTS: Product[] = [
+export const SEED_MOTORCYCLES: Motorcycle[] = [
+  { id: "moto-universal", brand: "Universal", model: "Semua Motor", name: "Universal", type: "Universal" },
+  { id: "moto-nmax", brand: "Yamaha", model: "NMAX", name: "Yamaha NMAX", type: "Matic" },
+  { id: "moto-pcx160", brand: "Honda", model: "PCX 160", name: "Honda PCX 160", type: "Matic" },
+  { id: "moto-vario160", brand: "Honda", model: "Vario 160", name: "Honda Vario 160", type: "Matic" },
+  { id: "moto-aerox155", brand: "Yamaha", model: "Aerox 155", name: "Yamaha Aerox 155", type: "Matic" },
+  { id: "moto-adv160", brand: "Honda", model: "ADV 160", name: "Honda ADV 160", type: "Matic" },
+  { id: "moto-ninja", brand: "Kawasaki", model: "Ninja / ZX", name: "Kawasaki Ninja / ZX", type: "Sport" },
+  { id: "moto-crf-klx", brand: "Honda / Kawasaki", model: "CRF / KLX", name: "CRF / KLX Trail", type: "Trail / Adventure" },
+];
+
+export const SEED_PRODUCTS: Product[] = [
   {
     id: "cr7-sql3-60w",
     slug: "cr7-sql-3-eye-laser-mini-driving-light",
@@ -654,7 +704,7 @@ export const PRODUCTS: Product[] = [
       "1x Soket Adaptor OEM Plug & Play",
     ],
     fitmentNotes:
-      "Pengganti langsung stoplamp bawaan tanpa ubahan kabel. Tersedia eksklusif di Shopee Official CR7 Racing.",
+      "Pengganti langsung stoplamp bawaan tanpa ubahan kabel. Tersedia di Shopee Official CR7 Racing.",
     compatibility: ["Yamaha NMAX", "Yamaha Aerox 155"],
     badges: ["Baru", "Waterproof"],
     featured: false,
@@ -728,142 +778,115 @@ export const PRODUCTS: Product[] = [
     description:
       "Saklar aluminium kedap air yang ringkas dengan pemilih warna Hi/Lo dan tombol Pass Beam ibu jari untuk kode dim instan saat menyalip.",
   },
-  {
-    id: "cr7-d2-laser-pro",
-    slug: "cr7-d2-mini-laser-fog-lamp-20w",
-    sku: "CR7-D2L-20W",
-    name: "CR7 Racing D2 Mini Laser Fog Lamp 20W (Putih / Kuning)",
-    category: "led-headlights",
-    price: 139000,
-    originalPrice: 175000,
-    currency: "IDR",
-    images: [
-      {
-        url: "/images/prod-biled-projector.svg",
-        alt: "Lampu kabut mini laser D2 CR7 Racing 20W bodi hitam kompak",
-        label: "Utama",
-      },
-      {
-        url: "/images/prod-beam-test.svg",
-        alt: "Pola sorot 2 warna putih dan kuning lampu D2 mini laser",
-        label: "Pola Cahaya",
-      },
-    ],
-    variants: [
-      {
-        id: "var-d2-1pc",
-        name: "Satuan (1 Pcs) Putih - Kuning",
-        sku: "CR7-D2L-1PC",
-        price: 139000,
-        inStock: true,
-        colorHex: "#F59E0B",
-      },
-      {
-        id: "var-d2-2pc",
-        name: "Sepasang (2 Pcs) Putih - Kuning",
-        sku: "CR7-D2L-2PC",
-        price: 265000,
-        inStock: true,
-        colorHex: "#CA0C1F",
-      },
-    ],
-    shortSpecs: ["20W Kompak", "2 Warna", "IP67"],
-    fullSpecs: {
-      "Daya Output": "20W Real Output",
-      "Mode Warna": "Dekat Putih 6000K / Jauh Kuning 3000K",
-      "Tegangan Input": "DC 12V – 24V",
-      Dimensi: "58mm × 36mm × 34mm (Super Kompak)",
-      "Ketahanan Air": "IP67 Sealed",
-    },
-    inTheBox: [
-      "1x Lampu Kabut CR7 D2 Mini Laser",
-      "1x Breket L & Baut Pemasangan",
-    ],
-    fitmentNotes:
-      "Ukuran super ringkas mudah disembunyikan di kolong spakbor motor matic seperti Vario, Beat, Scoopy, maupun NMAX.",
-    compatibility: [
-      "Universal",
-      "Honda Vario 160",
-      "Yamaha NMAX",
-      "Yamaha Aerox 155",
-      "CRF / KLX Trail",
-    ],
-    badges: ["Waterproof"],
-    featured: false,
-    inStock: true,
-    links: {
-      shopee: "https://shopee.co.id/search?keyword=CR7%20D2%20Laser%2020W",
-      tiktokShop: "https://shop.tiktok.com/",
-    },
-    description:
-      "Lampu kabut mini laser berdesain ringkas untuk ruang fairing sempit. Menghasilkan cahaya 2 warna fokus tanpa terlihat menonjol.",
-  },
-  {
-    id: "cr7-biled-30-titanium",
-    slug: "cr7-bi-led-30-titanium-series-70w",
-    sku: "CR7-TI30-70W",
-    name: "CR7 Racing Titanium Series 3.0\" Bi-LED Laser Matrix 70W",
-    category: "led-headlights",
-    price: 690000,
-    originalPrice: 790000,
-    currency: "IDR",
-    images: [
-      {
-        url: "/images/prod-biled-headlight.svg",
-        alt: "Projector Bi-LED 3.0 inci CR7 Racing Titanium Series 70W",
-        label: "Utama",
-      },
-      {
-        url: "/images/prod-beam-test.svg",
-        alt: "Uji sorot laser matrix intensitas tinggi",
-        label: "Pola Cahaya",
-      },
-    ],
-    variants: [
-      {
-        id: "var-ti30-58k",
-        name: "5800K Natural Daylight",
-        sku: "CR7-TI30-58K",
-        price: 690000,
-        inStock: false,
-        colorHex: "#E0F2FE",
-      },
-      {
-        id: "var-ti30-aw",
-        name: "All-Weather 4300K Warm White",
-        sku: "CR7-TI30-43K",
-        price: 710000,
-        inStock: false,
-        colorHex: "#FDE68A",
-      },
-    ],
-    shortSpecs: ["70W Matrix", "Lensa 3.0\"", "Batch Terbatas"],
-    fullSpecs: {
-      "Daya Output": "58W Low / 70W Laser Assist High Beam",
-      "Ukuran Lensa": "3.0 Inci Clear HD Optical Glass",
-      "Suhu Warna": "5800K Natural Daylight",
-      "Kipas Pendingin": "Dual Ball-Bearing High-RPM Copper Core",
-    },
-    inTheBox: [
-      "1x Unit Bi-LED Matrix 3.0\" Titanium Series",
-      "1x Kit Shroud & Dudukan Heavy-Duty",
-    ],
-    fitmentNotes:
-      "Sedang dalam proses restock batch berikutnya. Cek toko resmi Shopee atau TikTok Shop kami untuk notifikasi stok tersedia.",
-    compatibility: [
-      "Kawasaki Ninja / ZX",
-      "Yamaha NMAX",
-      "Honda PCX 160",
-      "Honda ADV 160",
-    ],
-    badges: ["Baru"],
-    featured: false,
-    inStock: false,
-    links: {
-      shopee: "https://shopee.co.id/search?keyword=CR7%20Biled%203%20inch",
-      tiktokShop: "https://shop.tiktok.com/",
-    },
-    description:
-      "Projector Bi-LED laser 3.0 inci kelas kompetisi yang dirancang untuk touring antar kota jarak jauh. Sedang menunggu restock batch terbaru.",
-  },
 ];
+
+export const SEED_HOME_CONTENT: HomeContent = {
+  hero: {
+    eyebrow: "Katalog Resmi Aksesoris Motor CR7 Racing",
+    headline: "Lampu LED Presisi & Part CNC Racing untuk Setiap Perjalanan.",
+    subheadline:
+      "Cek spesifikasi lengkap, uji sorot cutoff malam, dan kecocokan tipe motor. Klik langsung untuk checkout aman di toko resmi Shopee atau TikTok Shop CR7 Racing.",
+    primaryCtaLabel: "Lihat Semua Katalog",
+    primaryCtaHref: "/products",
+    heroImageUrl: "/images/hero-led.svg",
+    spotlightTag: "Produk Unggulan · CR7-SQL3-60W",
+    spotlightTitle: "CR7 SQL 3 Mata Laser Mini Driving Light",
+    spotlightProductSlug: "cr7-sql-3-eye-laser-mini-driving-light",
+    showOfficialStoreLinks: true,
+  },
+  sections: {
+    showTrustStrip: true,
+    showBikeFitmentStrip: true,
+    showCategoriesGrid: true,
+    featuredSectionEyebrow: "Upgrade Paling Diminati",
+    featuredSectionTitle: "Aksesoris Motor Unggulan",
+    featuredSectionSubtitle:
+      "Klik Lihat Cepat untuk cek varian & spesifikasi, atau langsung order via Shopee dan TikTok Shop.",
+    featuredMaxItems: 8,
+    showHighlights: true,
+  },
+  trustPillars: [
+    {
+      id: "pillar-original",
+      icon: "shield",
+      title: "100% Produk Original",
+      description:
+        "Part lampu LED & aksesori CNC resmi CR7 Racing dengan kartu garansi.",
+    },
+    {
+      id: "pillar-checkout",
+      icon: "truck",
+      title: "Order Shopee & TikTok",
+      description:
+        "Checkout mudah via aplikasi favorit dengan voucher gratis ongkir & COD.",
+    },
+    {
+      id: "pillar-specs",
+      icon: "gauge",
+      title: "Spesifikasi Teruji",
+      description:
+        "Watt real, uji ketahanan air IP67, dan panduan kecocokan motor akurat.",
+    },
+    {
+      id: "pillar-warranty",
+      icon: "award",
+      title: "Garansi Toko Resmi",
+      description:
+        "Klaim tukar unit cepat dan transparan langsung melalui chat toko resmi.",
+    },
+  ],
+  highlights: [
+    {
+      id: "hl-flat-cutoff",
+      badge: "CUTOFF RATA ANTI SILAU",
+      title: "Dirancang untuk Hujan Deras, Kabut, & Jalan Gelap.",
+      description:
+        "Setiap projector Bi-LED dan SQL laser CR7 Racing diuji pada jarak 15 meter untuk menghasilkan garis cutoff horizontal yang tajam—terang maksimal tanpa menyilaukan pengendara lawan arah.",
+      bullets: [
+        "Lampu dekat 6000K putih tajam + lampu jauh 3000K kuning tembus kabut",
+        "Bodi aluminium CNC 6063 dengan sertifikasi tahan air IP67",
+        "Langsung plug-and-play dengan Kabel Relay Set 40A CR7 Racing",
+      ],
+      imageUrl: "/images/prod-beam-test.svg",
+      imageAlt:
+        "Uji pola cahaya cutoff projector LED CR7 Racing 6000K putih dan 3000K kuning",
+      ctaLabel: "Jelajahi Seri Lampu LED",
+      ctaHref: "/products?category=led-headlights",
+      active: true,
+    },
+    {
+      id: "hl-cnc-cockpit",
+      badge: "CNC BILLET 6061-T6",
+      title: "Upgrade Kokpit Presisi dengan Handle & Spion CNC.",
+      description:
+        "Tingkatkan kontrol pengereman dan tampilan setang motor Anda menggunakan material aluminium CNC anodized yang kuat, ringan, dan anti karat untuk pemakaian harian maupun touring.",
+      bullets: [
+        "Setelan jarak 6 klik ergonomis sesuai ukuran jari pengendara",
+        "Kaca spion biru anti silau untuk visibilitas aman di malam hari",
+        "Tersedia varian khusus Yamaha NMAX, PCX 160, Vario 160 & Aerox",
+      ],
+      imageUrl: "/images/prod-cnc-levers.svg",
+      imageAlt: "Handle rem CNC 6 klik CR7 Racing hitam merah",
+      ctaLabel: "Lihat Aksesoris Kokpit",
+      ctaHref: "/products?category=controls-cockpit",
+      active: true,
+    },
+    {
+      id: "hl-touring-ready",
+      badge: "SIAP TOURING JARAK JAUH",
+      title: "Lindungi Smartphone & Mesin Motor di Setiap Medan.",
+      description:
+        "Kombinasi holder HP anti getar dengan charger PD 20W USB-C dan frame slider Delrin memberikan keamanan penuh saat berkendara jarak jauh.",
+      bullets: [
+        "Peredam silikon 4 titik menjaga kamera OIS HP tetap aman dari getaran",
+        "Port USB-C fast charging 20W dengan penutup karet tahan hujan",
+        "Tersedia promo paket bundling di Shopee & TikTok Shop CR7 Racing",
+      ],
+      imageUrl: "/images/prod-phone-mount.svg",
+      imageAlt: "Holder HP CNC anti getar USB-C CR7 Racing",
+      ctaLabel: "Lihat Perlengkapan Touring",
+      ctaHref: "/products?category=touring-mounts",
+      active: true,
+    },
+  ],
+};

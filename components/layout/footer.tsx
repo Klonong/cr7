@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import {
   Clock,
@@ -17,7 +19,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { BrandLogo } from "@/components/shared/brand-logo";
 import { OfficialStoreLinks } from "@/components/shared/official-store-links";
 import { STORE_CONFIG } from "@/config/store";
-import { CATEGORIES } from "@/data/categories";
+import { useFooterCategories } from "@/hooks/layout/use-footer-categories";
 import { cn } from "@/lib/utils";
 
 const SOCIAL_LINKS = [
@@ -44,6 +46,8 @@ const SOCIAL_LINKS = [
 ] as const;
 
 export function Footer() {
+  const categories = useFooterCategories();
+
   return (
     <footer className="mt-auto border-t border-white/15 bg-[#000000] text-[#fefefe]">
       <div className="mx-auto max-w-[1320px] px-4 py-12 sm:px-6 lg:px-8">
@@ -88,7 +92,7 @@ export function Footer() {
                   Tentang Kami &amp; Video YouTube
                 </Link>
               </li>
-              {CATEGORIES.map((category) => (
+              {categories.map((category) => (
                 <li key={category.slug}>
                   <Link
                     href={`/products?category=${category.slug}`}

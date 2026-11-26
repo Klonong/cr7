@@ -11,7 +11,7 @@ import {
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { useProductGallery } from "@/hooks/catalog/use-product-gallery";
 import { cn } from "@/lib/utils";
-import type { ProductImage } from "@/types/catalog";
+import type { ProductImage } from "@/interface/catalog";
 
 interface ProductGalleryProps {
   images: ProductImage[];

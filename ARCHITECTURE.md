@@ -1,96 +1,53 @@
-# CR7 Racing — Frontend Architecture & Backend Integration Guide
+# CR7 Racing — Full-Stack Architecture (Next.js 16 + Prisma PostgreSQL + JWT)
 
-This project is structured with clear layer boundaries so you can plug in a real database or external backend API without rewriting any React components or pages.
+This project implements a complete full-stack architecture using **Prisma ORM (PostgreSQL)**, **RFC 7519 HS256 JWT Authentication (`jose`)**, centralized TypeScript contracts in `interface/`, domain-organized client hooks in `hooks/`, and pure presentational TSX components in `components/`.
 
 ---
 
 ## 1. Directory Structure
 
 ```text
+prisma/
+├── schema.prisma               # Normalized PostgreSQL schema (AdminUser, Category, Motorcycle, Product, ProductVariant, HomeSettings, HomeHighlight)
+└── seed.ts                     # Idempotent seed script for AdminUser, Categories, Motorcycles, Products + Variants & Home Content
+
+interface/                      # Single source of truth for ALL TypeScript interfaces
+├── catalog.ts                  # Product, ProductVariant, Category, Motorcycle, Filters, Stats & Breakdown
+├── home.ts                     # HomeHeroSettings, HomeSectionSettings, HomeTrustPillar, HomeHighlight, HomeContent
+├── api.ts                      # API response envelopes, AdminSession, AdminJwtPayload, AdminUserRecord
+├── repository.ts               # CatalogRepository, CategoryRepository, MotorcycleRepository, HomeRepository, AdminUserRepository
+├── hooks.ts                    # AdminFeedback, VariantDraft, ThemeContextValue, UseProductFiltersOptions
+└── index.ts                    # Barrel export
+
 app/                            # Next.js 16 App Router pages & Route Handlers
 ├── api/
 │   ├── products/route.ts       # Public GET /api/products
 │   ├── categories/route.ts     # Public GET /api/categories
 │   ├── motorcycles/route.ts    # Public GET /api/motorcycles
 │   └── admin/
-│       ├── login/route.ts      # POST /api/admin/login
-│       ├── logout/route.ts     # POST /api/admin/logout
-│       ├── upload/route.ts     # POST /api/admin/upload (Drag & Drop image upload to public/uploads)
-│       ├── categories/
-│       │   ├── route.ts        # GET, POST /api/admin/categories
-│       │   └── [slug]/route.ts # PUT, DELETE /api/admin/categories/[slug]
-│       ├── motorcycles/
-│       │   ├── route.ts        # GET, POST /api/admin/motorcycles
-│       │   └── [id]/route.ts   # DELETE /api/admin/motorcycles/[id]
-│       ├── home/
-│       │   ├── route.ts        # GET, PUT /api/admin/home (hero, sections, trust pillars)
-│       │   └── highlights/
-│       │       ├── route.ts    # POST /api/admin/home/highlights
-│       │       └── [id]/route.ts # PUT, PATCH (active), DELETE highlight
-│       └── products/
-│           ├── route.ts        # GET, POST /api/admin/products
-│           └── [id]/route.ts   # PUT, PATCH (stock), DELETE /api/admin/products/[id]
-├── admin/
-│   ├── page.tsx                # Protected Admin Dashboard Overview (KPIs, breakdown, alerts)
-│   ├── products/page.tsx       # Protected Catalog Products CRUD Console (with Variants & Drag-Drop)
-│   ├── categories/
-│   │   ├── page.tsx            # Protected Categories Management Console (imageless)
-│   │   └── new/page.tsx        # Dedicated Create New Category Page + Live Preview
-│   ├── motorcycles/
-│   │   ├── page.tsx            # Protected Motorcycle Compatibility Models Console
-│   │   └── new/page.tsx        # Dedicated Add Motorcycle Page + Live Preview
-│   ├── home/page.tsx           # Protected Home Content & Spotlight Carousel Highlights Console
-│   └── login/page.tsx          # Hidden URL-only Admin Login (robots: noindex)
-├── about/
-│   └── page.tsx                # Tentang Kami page + YouTube Channel link & embedded video showcase
-├── products/
-│   ├── page.tsx                # Filterable public catalog
-│   └── [slug]/page.tsx         # Product Detail Page + Variant selector + mobile sticky buy bar
-├── page.tsx                    # Home Showcase (Hero, Categories, Motorcycles, Featured, Spotlight Carousel)
-└── layout.tsx                  # Root layout + ThemeProvider + StorefrontShell + FloatingWhatsApp
+│       ├── login/route.ts      # POST /api/admin/login (100% PostgreSQL AdminUser auth, rate-limited, HS256 JWT + SameSite=Strict HttpOnly cookie)
+│       ├── logout/route.ts     # POST /api/admin/logout (bumps tokenVersion in PostgreSQL + clears JWT cookie)
+│       ├── me/route.ts         # GET /api/admin/me (verifies JWT + PostgreSQL isActive/tokenVersion)
+│       ├── users/              # GET, POST /api/admin/users & PATCH, DELETE /[id] (DB Admin Account Management, RBAC SUPER_ADMIN)
+│       ├── upload/route.ts     # POST /api/admin/upload (JWT-protected raster-only upload with magic-byte check)
+│       ├── categories/         # GET, POST /api/admin/categories & PUT, DELETE /[slug]
+│       ├── motorcycles/        # GET, POST /api/admin/motorcycles & DELETE /[id]
+│       ├── home/               # GET, PUT /api/admin/home & highlights CRUD
+│       └── products/           # GET, POST /api/admin/products & PUT, PATCH, DELETE /[id]
+├── admin/                      # Protected Admin Suite (/admin, /products, /categories, /motorcycles, /home, /users)
+├── about/page.tsx              # Tentang Kami + YouTube showcase
+├── products/                   # Filterable catalog & PDP with Variant selector
+└── page.tsx                    # Home Showcase + Spotlight Carousel
 
-types/                          # Single source of truth for TypeScript contracts
-├── catalog.ts                  # Product, ProductVariant, ProductInput, Category, Motorcycle, Filters, Stats
-└── api.ts                      # API response envelopes, UploadImageResponse & AdminSession
-
-config/
-└── store.ts                    # CR7 Racing store URLs, YouTube showcase videos, nav links, badges, image presets
-
-data/                           # Static taxonomy & seed data (Bahasa Indonesia)
-├── categories.ts               # Imageless categories & DEFAULT_MOTORCYCLES
-├── products.ts                 # Default seed catalog with variants per product
-├── home-defaults.ts            # Default Indonesian hero, trust pillars & 3 spotlight highlights
-└── *-store.json                # Local JSON persistence (swappable for DB)
-
-lib/
-├── utils.ts                    # shadcn cn() utility
-├── format.ts                   # formatPrice, getDiscountPercent, slugify, key/value & list parsers
-├── catalog-filters.ts          # Pure filterProducts, sortProducts, getRelatedProducts, computeCatalogStats
-├── validation/
-│   ├── product.ts              # Isomorphic validateProductInput() including variants[]
-│   ├── category.ts             # Isomorphic validateCategoryInput() (imageless)
-│   ├── motorcycle.ts           # Isomorphic validateMotorcycleInput()
-│   └── home.ts                 # Isomorphic validateHomeSettingsInput() & validateHighlightInput()
-├── api/                        # Client-side HTTP layer (zero raw fetch() in UI components)
-│   ├── client.ts               # Typed apiFetch<T>() + ApiClientError + getErrorMessage()
-│   ├── catalog-api.ts          # fetchPublicProducts, create/update/toggleStock/delete
-│   ├── category-api.ts         # fetchPublicCategories, create/update/delete
-│   ├── motorcycle-api.ts       # fetchPublicMotorcycles, create/delete
-│   ├── upload-api.ts           # uploadAdminImage() (FormData upload for ImageDropzone)
-│   ├── home-api.ts             # saveHomeSettings, create/update/toggle/delete highlights
-│   └── auth-api.ts             # loginAdmin, logoutAdmin
-└── server/                     # Server-only backend integration boundary
-    ├── catalog-repository.ts   # CatalogRepository interface (SWAP POINT #1)
-    ├── json-catalog-repository.ts # Default JSON implementation
-    ├── catalog-service.ts      # Next.js 16 "use cache" reads + revalidateCatalog()
-    ├── category-repository.ts  # CategoryRepository interface (SWAP POINT #2)
-    ├── category-service.ts     # Next.js 16 "use cache" reads + revalidateCategories()
-    ├── motorcycle-repository.ts # MotorcycleRepository interface (SWAP POINT #3)
-    ├── motorcycle-service.ts   # Next.js 16 "use cache" reads + revalidateMotorcycles()
-    ├── home-repository.ts      # HomeRepository interface (SWAP POINT #4)
-    ├── json-home-repository.ts # Default JSON home-content implementation
-    ├── home-service.ts         # Next.js 16 "use cache" reads + revalidateHomeContent()
-    └── admin-auth.ts           # Signed HttpOnly cookie auth + requireAdminApiSession() (SWAP POINT #5)
+lib/server/                     # Server-only Prisma persistence & JWT security layer
+├── prisma.ts                   # Global PrismaClient singleton + graceful unavailability detection
+├── password.ts                 # OWASP scrypt password hashing + timingSafeEqual verification
+├── admin-auth.ts               # HS256 JWT sign/verify (`jose`), HttpOnly cookie + Bearer header support
+├── prisma-admin-user-repository.ts / admin-user-repository.ts
+├── prisma-catalog-repository.ts    / catalog-repository.ts    / catalog-service.ts
+├── prisma-category-repository.ts   / category-repository.ts   / category-service.ts
+├── prisma-motorcycle-repository.ts / motorcycle-repository.ts / motorcycle-service.ts
+└── prisma-home-repository.ts       / home-repository.ts       / home-service.ts
 
 hooks/                          # ALL client-side state, effects, forms & API logic (organized by domain)
 ├── shared/
@@ -116,6 +73,7 @@ hooks/                          # ALL client-side state, effects, forms & API lo
     ├── use-admin-categories.ts # Category CRUD, product counts, search & banners
     ├── use-admin-motorcycles.ts # Motorcycle CRUD, compatibility counts & banners
     ├── use-admin-home.ts       # Home settings draft state & Spotlight Highlights CRUD
+    ├── use-admin-users.ts      # PostgreSQL AdminUser CRUD, password reset, role & active toggles
     ├── use-product-form.ts     # Product create/edit form, variants editor & validation
     ├── use-category-form.ts    # Category create & edit form hooks
     ├── use-motorcycle-form.ts  # Motorcycle create form & duplicate validation
@@ -130,7 +88,7 @@ components/                     # Purely presentational TSX components (zero inl
 ├── layout/                     # Navbar, Footer, CommandSearch, StorefrontShell
 ├── about/                      # YouTubeShowcase (channel CTA + interactive YouTube embed player)
 ├── catalog/                    # ProductCard, MarketplaceCta, ProductQuickView, ProductDetailPurchase, ProductGallery, CatalogBrowser, SpotlightCarousel
-└── admin/                      # AdminHeader, AdminFeedbackBanner, AdminOverview, AdminLoginForm, AdminDashboard, ProductFormDialog, ImageDropzone, CategoriesManager, CategoryCreateView, CategoryEditDialog, MotorcyclesManager, MotorcycleCreateView, HomeSettingsManager, HighlightFormDialog
+└── admin/                      # AdminHeader, AdminFeedbackBanner, AdminOverview, AdminLoginForm, AdminDashboard, ProductFormDialog, ImageDropzone, CategoriesManager, CategoryCreateView, CategoryEditDialog, MotorcyclesManager, MotorcycleCreateView, HomeSettingsManager, HighlightFormDialog, AdminUsersManager
 ```
 
 ---

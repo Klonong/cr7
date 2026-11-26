@@ -9,13 +9,13 @@ import {
 } from "@/lib/api/home-api";
 import { getErrorMessage } from "@/lib/api/client";
 import type { AdminFeedback } from "@/hooks/admin/use-admin-catalog";
-import type { Product } from "@/types/catalog";
+import type { Product } from "@/interface/catalog";
 import type {
   HomeContent,
   HomeHighlight,
   HomeSettingsInput,
   HomeTrustPillar,
-} from "@/types/home";
+} from "@/interface/home";
 
 export function useAdminHome(
   initialContent: HomeContent,

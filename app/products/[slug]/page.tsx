@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -26,14 +27,7 @@ import {
 } from "@/lib/server/catalog-service";
 import { getCatalogCategories } from "@/lib/server/category-service";
 import { getRelatedProducts } from "@/lib/catalog-filters";
-import { PRODUCTS } from "@/data/products";
 import { STORE_CONFIG } from "@/config/store";
-
-export async function generateStaticParams() {
-  return PRODUCTS.map((product) => ({
-    slug: product.slug,
-  }));
-}
 
 export async function generateMetadata({
   params,
@@ -49,9 +43,11 @@ export async function generateMetadata({
   };
 }
 
-export default async function ProductDetailPage({
+async function ProductDetailContent({
   params,
-}: PageProps<"/products/[slug]">) {
+}: {
+  params: Promise<{ slug: string }>;
+}) {
   const { slug } = await params;
   const [product, allProducts, categories] = await Promise.all([
     getCatalogProductBySlug(slug),
@@ -260,8 +256,24 @@ export default async function ProductDetailPage({
           </Link>
         </div>
 
-        <FeaturedGrid products={related} columns={4} />
+        <FeaturedGrid products={related} categories={categories} columns={4} />
       </section>
     </div>
+  );
+}
+
+export default function ProductDetailPage({
+  params,
+}: PageProps<"/products/[slug]">) {
+  return (
+    <Suspense
+      fallback={
+        <div className="mx-auto w-full max-w-[1320px] px-4 py-16 text-center text-sm text-muted-foreground">
+          Memuat detail produk...
+        </div>
+      }
+    >
+      <ProductDetailContent params={params} />
+    </Suspense>
   );
 }

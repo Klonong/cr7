@@ -3,8 +3,8 @@ import type {
   CategoriesListResponse,
   CategoryMutationResponse,
   DeleteResponse,
-} from "@/types/api";
-import type { Category, CategoryInput } from "@/types/catalog";
+} from "@/interface/api";
+import type { Category, CategoryInput } from "@/interface/catalog";
 
 export async function fetchPublicCategories(): Promise<Category[]> {
   const data = await apiFetch<CategoriesListResponse>("/api/categories");

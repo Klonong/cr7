@@ -30,7 +30,7 @@ import { AdminFeedbackBanner } from "@/components/admin/admin-feedback-banner";
 import { CategoryEditDialog } from "@/components/admin/category-edit-dialog";
 import { useAdminCategories } from "@/hooks/admin/use-admin-categories";
 import { cn } from "@/lib/utils";
-import type { Category, Product } from "@/types/catalog";
+import type { Category, Product } from "@/interface/catalog";
 
 interface CategoriesManagerProps {
   initialCategories: Category[];

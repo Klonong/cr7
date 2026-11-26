@@ -8,7 +8,7 @@ import {
 import { getErrorMessage } from "@/lib/api/client";
 import { parseNewlineList } from "@/lib/format";
 import { validateHighlightInput } from "@/lib/validation/home";
-import type { HomeHighlight, HomeHighlightInput } from "@/types/home";
+import type { HomeHighlight, HomeHighlightInput } from "@/interface/home";
 
 interface UseHighlightFormOptions {
   highlight: HomeHighlight | null;

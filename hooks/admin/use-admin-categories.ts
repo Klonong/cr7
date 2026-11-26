@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { deleteCatalogCategory } from "@/lib/api/category-api";
 import { getErrorMessage } from "@/lib/api/client";
 import type { AdminFeedback } from "@/hooks/admin/use-admin-catalog";
-import type { Category, Product } from "@/types/catalog";
+import type { Category, Product } from "@/interface/catalog";
 
 export function useAdminCategories(
   initialCategories: Category[],

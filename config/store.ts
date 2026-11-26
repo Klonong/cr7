@@ -1,4 +1,5 @@
-import type { MotorcycleType, ProductBadge } from "@/types/catalog";
+import type { MotorcycleType, ProductBadge } from "@/interface/catalog";
+import type { HomeContent } from "@/interface/home";
 
 export const STORE_CONFIG = {
   brandName: "CR7 Racing",
@@ -83,3 +84,42 @@ export const PRODUCT_IMAGE_PRESETS = [
 
 export const DEFAULT_PRODUCT_IMAGE = "/images/prod-biled-projector.svg";
 export const BEAM_TEST_IMAGE = "/images/prod-beam-test.svg";
+
+export const HERO_IMAGE_PRESETS = [
+  { label: "Hero Dual-Lens LED", url: "/images/hero-led.svg" },
+  { label: "Tes Sorot Cutoff Malam", url: "/images/prod-beam-test.svg" },
+  { label: "SQL 3 Mata Projector", url: "/images/prod-biled-projector.svg" },
+  { label: "Bi-LED 2.5\" Headlight", url: "/images/prod-biled-headlight.svg" },
+  { label: "Handle Rem CNC", url: "/images/prod-cnc-levers.svg" },
+  { label: "Frame Slider Delrin", url: "/images/prod-crash-guard.svg" },
+  { label: "Holder HP CNC", url: "/images/prod-phone-mount.svg" },
+] as const;
+
+export const EMPTY_HOME_CONTENT: HomeContent = {
+  hero: {
+    eyebrow: "Katalog Resmi Aksesoris Motor CR7 Racing",
+    headline: "Aksesori & Lampu LED Motor CR7 Racing",
+    subheadline:
+      "Jelajahi katalog resmi lampu LED dan part CNC CR7 Racing langsung dari database.",
+    primaryCtaLabel: "Lihat Semua Katalog",
+    primaryCtaHref: "/products",
+    heroImageUrl: "/images/hero-led.svg",
+    spotlightTag: "",
+    spotlightTitle: "",
+    spotlightProductSlug: "",
+    showOfficialStoreLinks: true,
+  },
+  sections: {
+    showTrustStrip: true,
+    showBikeFitmentStrip: true,
+    showCategoriesGrid: true,
+    featuredSectionEyebrow: "Katalog Unggulan",
+    featuredSectionTitle: "Aksesoris Motor CR7 Racing",
+    featuredSectionSubtitle:
+      "Pilih produk untuk melihat spesifikasi lengkap dan tautan toko resmi.",
+    featuredMaxItems: 8,
+    showHighlights: true,
+  },
+  trustPillars: [],
+  highlights: [],
+};

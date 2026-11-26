@@ -9,6 +9,7 @@ import {
   LayoutTemplate,
   LogOut,
   Package,
+  ShieldCheck,
 } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { BrandLogo } from "@/components/shared/brand-logo";
@@ -52,6 +53,13 @@ const ADMIN_NAV_ITEMS = [
     icon: LayoutTemplate,
     exact: false,
   },
+  {
+    href: "/admin/users",
+    label: "Akun Admin",
+    shortLabel: "Admin",
+    icon: ShieldCheck,
+    exact: false,
+  },
 ] as const;
 
 interface AdminHeaderProps {
@@ -84,7 +92,7 @@ export function AdminHeader({ username }: AdminHeaderProps) {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-colors",
+                    "inline-flex shrink-0 items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-semibold transition-colors",
                     isActive
                       ? "bg-primary text-[#fefefe] shadow-xs"
                       : "text-zinc-300 hover:bg-white/10 hover:text-[#fefefe]"

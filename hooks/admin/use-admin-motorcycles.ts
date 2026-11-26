@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { deleteCatalogMotorcycle } from "@/lib/api/motorcycle-api";
 import { getErrorMessage } from "@/lib/api/client";
 import type { AdminFeedback } from "@/hooks/admin/use-admin-catalog";
-import type { Motorcycle, Product } from "@/types/catalog";
+import type { Motorcycle, Product } from "@/interface/catalog";
 
 export function useAdminMotorcycles(
   initialMotorcycles: Motorcycle[],

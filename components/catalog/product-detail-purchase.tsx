@@ -14,7 +14,7 @@ import { MarketplaceCta } from "@/components/catalog/marketplace-cta";
 import { useProductVariant } from "@/hooks/catalog/use-product-variant";
 import { formatPrice } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import type { Category, Product } from "@/types/catalog";
+import type { Category, Product } from "@/interface/catalog";
 
 interface ProductDetailPurchaseProps {
   product: Product;

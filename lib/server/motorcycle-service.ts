@@ -1,6 +1,6 @@
 import { cacheLife, cacheTag, revalidatePath, revalidateTag } from "next/cache";
 import { motorcycleRepository } from "@/lib/server/motorcycle-repository";
-import type { Motorcycle } from "@/types/catalog";
+import type { Motorcycle } from "@/interface/catalog";
 
 export const MOTORCYCLES_CACHE_TAG = "motorcycles";
 

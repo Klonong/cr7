@@ -9,7 +9,7 @@ import {
   TikTokShopIcon,
 } from "@/components/icons/marketplace-icons";
 import { STORE_CONFIG } from "@/config/store";
-import type { Product, ProductVariant } from "@/types/catalog";
+import type { Product, ProductVariant } from "@/interface/catalog";
 
 interface MarketplaceCtaProps {
   product: Product;

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import type { Product } from "@/types/catalog";
+import type { Product } from "@/interface/catalog";
 
 export function useQuickView() {
   const [quickViewProduct, setQuickViewProduct] =

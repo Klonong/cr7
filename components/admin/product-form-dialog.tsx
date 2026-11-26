@@ -38,7 +38,7 @@ import type {
   CategorySlug,
   Motorcycle,
   Product,
-} from "@/types/catalog";
+} from "@/interface/catalog";
 
 interface ProductFormDialogProps {
   open: boolean;

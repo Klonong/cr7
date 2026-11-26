@@ -1,14 +1,9 @@
 "use client";
 
 import * as React from "react";
+import type { Theme, ThemeContextValue } from "@/interface/hooks";
 
-export type Theme = "light" | "dark";
-
-export interface ThemeContextValue {
-  theme: Theme;
-  setTheme: (theme: Theme) => void;
-  toggleTheme: () => void;
-}
+export type { Theme, ThemeContextValue };
 
 export const ThemeContext = React.createContext<ThemeContextValue | undefined>(
   undefined

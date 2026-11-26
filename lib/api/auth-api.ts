@@ -1,5 +1,9 @@
 import { apiFetch } from "@/lib/api/client";
-import type { AuthLoginResponse, AuthLogoutResponse } from "@/types/api";
+import type {
+  AdminSession,
+  AuthLoginResponse,
+  AuthLogoutResponse,
+} from "@/interface/api";
 
 export async function loginAdmin(credentials: {
   username: string;
@@ -15,4 +19,13 @@ export async function logoutAdmin(): Promise<AuthLogoutResponse> {
   return apiFetch<AuthLogoutResponse>("/api/admin/logout", {
     method: "POST",
   });
+}
+
+export async function fetchCurrentAdminSession(): Promise<{
+  authenticated: boolean;
+  session: AdminSession;
+}> {
+  return apiFetch<{ authenticated: boolean; session: AdminSession }>(
+    "/api/admin/me"
+  );
 }

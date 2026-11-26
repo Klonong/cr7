@@ -25,7 +25,7 @@ export interface Motorcycle {
   id: string;
   brand: string;
   model: string;
-  name: string; // e.g., "Yamaha NMAX" or "Universal"
+  name: string;
   type: MotorcycleType;
 }
 
@@ -133,4 +133,16 @@ export interface CatalogStats {
   soldOut: number;
   shopeeLinked: number;
   tiktokLinked: number;
+}
+
+export interface CategoryBreakdownItem {
+  slug: CategorySlug;
+  count: number;
+  inStockCount: number;
+  percentage: number;
+}
+
+export interface CatalogAttentionItem {
+  product: Product;
+  reasons: ("Sold Out" | "No Shopee Link" | "No TikTok Link")[];
 }

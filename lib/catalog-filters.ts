@@ -1,9 +1,11 @@
 import type {
+  CatalogAttentionItem,
   CatalogStats,
+  CategoryBreakdownItem,
   Product,
   ProductFilterCriteria,
   SortOption,
-} from "@/types/catalog";
+} from "@/interface/catalog";
 
 export function filterProducts(
   products: readonly Product[],
@@ -147,12 +149,7 @@ export function computeCatalogStats(products: readonly Product[]): CatalogStats 
   };
 }
 
-export interface CategoryBreakdownItem {
-  slug: Product["category"];
-  count: number;
-  inStockCount: number;
-  percentage: number;
-}
+export type { CatalogAttentionItem, CategoryBreakdownItem };
 
 export function computeCategoryBreakdown(
   products: readonly Product[],
@@ -169,11 +166,6 @@ export function computeCategoryBreakdown(
       percentage: Math.round((matches.length / total) * 100),
     };
   });
-}
-
-export interface CatalogAttentionItem {
-  product: Product;
-  reasons: ("Sold Out" | "No Shopee Link" | "No TikTok Link")[];
 }
 
 export function getCatalogAttentionItems(

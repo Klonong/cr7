@@ -1,0 +1,135 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AdminRole {
+  ADMIN
+  SUPER_ADMIN
+}
+
+model AdminUser {
+  id           String    @id @default(cuid())
+  username     String    @unique
+  passwordHash String    @map("password_hash")
+  role         AdminRole @default(ADMIN)
+  isActive     Boolean   @default(true) @map("is_active")
+  tokenVersion Int       @default(0) @map("token_version")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  @@index([username, isActive])
+  @@map("admin_users")
+}
+
+model Category {
+  slug        String    @id
+  name        String
+  shortName   String    @map("short_name")
+  description String
+  sortOrder   Int       @default(0) @map("sort_order")
+  products    Product[]
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([sortOrder])
+  @@map("categories")
+}
+
+model Motorcycle {
+  id        String   @id @default(cuid())
+  brand     String
+  model     String
+  name      String   @unique
+  type      String
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([brand])
+  @@index([type])
+  @@index([sortOrder])
+  @@map("motorcycles")
+}
+
+model Product {
+  id            String           @id @default(cuid())
+  slug          String           @unique
+  sku           String           @unique
+  name          String
+  categorySlug  String           @map("category_slug")
+  category      Category         @relation(fields: [categorySlug], references: [slug], onDelete: Restrict, onUpdate: Cascade)
+  price         Int
+  originalPrice Int?             @map("original_price")
+  currency      String           @default("IDR")
+  images        Json
+  variants      ProductVariant[]
+  shortSpecs    String[]         @map("short_specs")
+  fullSpecs     Json             @map("full_specs")
+  inTheBox      String[]         @map("in_the_box")
+  fitmentNotes  String           @default("") @map("fitment_notes")
+  compatibility String[]
+  badges        String[]
+  featured      Boolean          @default(false)
+  inStock       Boolean          @default(true) @map("in_stock")
+  shopeeUrl     String?          @map("shopee_url")
+  tiktokShopUrl String?          @map("tiktok_shop_url")
+  description   String
+  createdAt     DateTime         @default(now()) @map("created_at")
+  updatedAt     DateTime         @updatedAt @map("updated_at")
+
+  @@index([categorySlug])
+  @@index([featured, inStock])
+  @@index([inStock, createdAt])
+  @@map("products")
+}
+
+model ProductVariant {
+  id            String  @id @default(cuid())
+  productId     String  @map("product_id")
+  product       Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name          String
+  sku           String?
+  price         Int?
+  inStock       Boolean @default(true) @map("in_stock")
+  colorHex      String? @map("color_hex")
+  shopeeUrl     String? @map("shopee_url")
+  tiktokShopUrl String? @map("tiktok_shop_url")
+  sortOrder     Int     @default(0) @map("sort_order")
+
+  @@index([productId, sortOrder])
+  @@map("product_variants")
+}
+
+model HomeSettings {
+  id           String   @id @default("default")
+  hero         Json
+  sections     Json
+  trustPillars Json     @map("trust_pillars")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("home_settings")
+}
+
+model HomeHighlight {
+  id          String   @id @default(cuid())
+  badge       String
+  title       String
+  description String
+  bullets     String[]
+  imageUrl    String   @map("image_url")
+  imageAlt    String   @map("image_alt")
+  ctaLabel    String   @map("cta_label")
+  ctaHref     String   @map("cta_href")
+  active      Boolean  @default(true)
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([active, sortOrder])
+  @@map("home_highlights")
+}

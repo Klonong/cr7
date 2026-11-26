@@ -1,6 +1,6 @@
 import { cacheLife, cacheTag, revalidatePath, revalidateTag } from "next/cache";
 import { homeRepository } from "@/lib/server/home-repository";
-import type { HomeContent } from "@/types/home";
+import type { HomeContent } from "@/interface/home";
 
 export const HOME_CONTENT_CACHE_TAG = "home-content";
 

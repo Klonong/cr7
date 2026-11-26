@@ -3,8 +3,8 @@ import type {
   DeleteResponse,
   MotorcycleMutationResponse,
   MotorcyclesListResponse,
-} from "@/types/api";
-import type { Motorcycle, MotorcycleInput } from "@/types/catalog";
+} from "@/interface/api";
+import type { Motorcycle, MotorcycleInput } from "@/interface/catalog";
 
 export async function fetchPublicMotorcycles(): Promise<Motorcycle[]> {
   const data = await apiFetch<MotorcyclesListResponse>("/api/motorcycles");

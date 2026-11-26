@@ -1,6 +1,6 @@
 import { cacheLife, cacheTag, revalidatePath, revalidateTag } from "next/cache";
 import { catalogRepository } from "@/lib/server/catalog-repository";
-import type { Product } from "@/types/catalog";
+import type { Product } from "@/interface/catalog";
 
 export const CATALOG_CACHE_TAG = "catalog";
 

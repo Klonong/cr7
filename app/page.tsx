@@ -25,7 +25,7 @@ import { getCatalogCategories } from "@/lib/server/category-service";
 import { getCatalogMotorcycles } from "@/lib/server/motorcycle-service";
 import { getHomeContent } from "@/lib/server/home-service";
 import { cn } from "@/lib/utils";
-import type { TrustIconName } from "@/types/home";
+import type { TrustIconName } from "@/interface/home";
 
 const TRUST_ICON_MAP: Record<TrustIconName, LucideIcon> = {
   shield: ShieldCheck,
@@ -349,7 +349,11 @@ export default async function HomePage() {
             </Link>
           </div>
 
-          <FeaturedGrid products={displayFeatured} columns={4} />
+          <FeaturedGrid
+            products={displayFeatured}
+            categories={categories}
+            columns={4}
+          />
         </div>
       </section>
 

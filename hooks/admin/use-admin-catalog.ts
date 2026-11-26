@@ -8,12 +8,11 @@ import {
 } from "@/lib/api/catalog-api";
 import { getErrorMessage } from "@/lib/api/client";
 import { computeCatalogStats, filterProducts } from "@/lib/catalog-filters";
-import type { Category, CategorySlug, Product } from "@/types/catalog";
+import type { Category, CategorySlug, Product } from "@/interface/catalog";
 
-export interface AdminFeedback {
-  type: "success" | "error";
-  message: string;
-}
+import type { AdminFeedback } from "@/interface/hooks";
+
+export type { AdminFeedback };
 
 export function useAdminCatalog(
   initialProducts: Product[],

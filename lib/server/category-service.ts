@@ -1,6 +1,6 @@
 import { cacheLife, cacheTag, revalidatePath, revalidateTag } from "next/cache";
 import { categoryRepository } from "@/lib/server/category-repository";
-import type { Category } from "@/types/catalog";
+import type { Category } from "@/interface/catalog";
 
 export const CATEGORIES_CACHE_TAG = "categories";
 

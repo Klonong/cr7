@@ -16,16 +16,18 @@ import { MarketplaceCta } from "@/components/catalog/marketplace-cta";
 import { useProductCard } from "@/hooks/catalog/use-product-card";
 import { formatPrice } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import type { Product } from "@/types/catalog";
+import type { Category, Product } from "@/interface/catalog";
 
 interface ProductCardProps {
   product: Product;
+  categories?: Category[];
   onQuickView?: (product: Product) => void;
   priority?: boolean;
 }
 
 export function ProductCard({
   product,
+  categories,
   onQuickView,
   priority = false,
 }: ProductCardProps) {
@@ -38,7 +40,7 @@ export function ProductCard({
     variants,
     handleMouseEnter,
     handleMouseLeave,
-  } = useProductCard(product);
+  } = useProductCard(product, categories);
 
   return (
     <Card

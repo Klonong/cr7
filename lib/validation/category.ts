@@ -1,6 +1,6 @@
 import { slugify } from "@/lib/format";
 import type { ValidationResult } from "@/lib/validation/product";
-import type { CategoryInput } from "@/types/catalog";
+import type { CategoryInput } from "@/interface/catalog";
 
 export function validateCategoryInput(
   raw: unknown
@@ -17,20 +17,20 @@ export function validateCategoryInput(
   const description =
     typeof body.description === "string" ? body.description.trim() : "";
 
-  if (!name || name.length < 3) {
+  if (!name || name.length < 3 || name.length > 80) {
     return {
       ok: false,
-      error: "Nama kategori minimal 3 karakter.",
+      error: "Nama kategori harus 3–80 karakter.",
     };
   }
-  if (!shortName || shortName.length < 2) {
+  if (!shortName || shortName.length < 2 || shortName.length > 24) {
     return {
       ok: false,
-      error: "Label singkat minimal 2 karakter.",
+      error: "Label singkat harus 2–24 karakter.",
     };
   }
 
-  const normalizedSlug = slugify(rawSlug || name);
+  const normalizedSlug = slugify(rawSlug || name).slice(0, 60);
   if (!normalizedSlug || normalizedSlug.length < 2) {
     return {
       ok: false,
@@ -38,10 +38,10 @@ export function validateCategoryInput(
     };
   }
 
-  if (!description || description.length < 8) {
+  if (!description || description.length < 8 || description.length > 200) {
     return {
       ok: false,
-      error: "Deskripsi kategori minimal 8 karakter.",
+      error: "Deskripsi kategori harus 8–200 karakter.",
     };
   }
 

@@ -2,24 +2,17 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { PRODUCTS as FALLBACK_PRODUCTS } from "@/data/products";
-import {
-  CATEGORIES as FALLBACK_CATEGORIES,
-  DEFAULT_MOTORCYCLES as FALLBACK_MOTORCYCLES,
-} from "@/data/categories";
 import { fetchPublicProducts } from "@/lib/api/catalog-api";
 import { fetchPublicCategories } from "@/lib/api/category-api";
 import { fetchPublicMotorcycles } from "@/lib/api/motorcycle-api";
-import type { Category, Motorcycle, Product } from "@/types/catalog";
+import type { Category, Motorcycle, Product } from "@/interface/catalog";
 
 export function useCommandSearch() {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
-  const [products, setProducts] = React.useState<Product[]>(FALLBACK_PRODUCTS);
-  const [categories, setCategories] =
-    React.useState<Category[]>(FALLBACK_CATEGORIES);
-  const [motorcycles, setMotorcycles] =
-    React.useState<Motorcycle[]>(FALLBACK_MOTORCYCLES);
+  const [products, setProducts] = React.useState<Product[]>([]);
+  const [categories, setCategories] = React.useState<Category[]>([]);
+  const [motorcycles, setMotorcycles] = React.useState<Motorcycle[]>([]);
 
   const syncLiveCatalog = React.useCallback(() => {
     Promise.all([

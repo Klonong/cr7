@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/providers/theme-provider";
@@ -53,7 +54,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </a>
         <ThemeProvider>
           <TooltipProvider>
-            <StorefrontShell>{children}</StorefrontShell>
+            <Suspense fallback={<div className="min-h-screen bg-background" />}>
+              <StorefrontShell>{children}</StorefrontShell>
+            </Suspense>
           </TooltipProvider>
         </ThemeProvider>
       </body>

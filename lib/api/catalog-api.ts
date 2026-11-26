@@ -3,8 +3,8 @@ import type {
   DeleteResponse,
   ProductMutationResponse,
   ProductsListResponse,
-} from "@/types/api";
-import type { Product, ProductInput } from "@/types/catalog";
+} from "@/interface/api";
+import type { Product, ProductInput } from "@/interface/catalog";
 
 export async function fetchPublicProducts(): Promise<Product[]> {
   const data = await apiFetch<ProductsListResponse>("/api/products");

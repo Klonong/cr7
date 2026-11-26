@@ -1,10 +1,14 @@
-import { isSafeHttpUrl, type ValidationResult } from "@/lib/validation/product";
+import {
+  isSafeHttpUrl,
+  isSafeLocalImageUrl,
+  type ValidationResult,
+} from "@/lib/validation/product";
 import type {
   HomeHighlightInput,
   HomeSettingsInput,
   HomeTrustPillar,
   TrustIconName,
-} from "@/types/home";
+} from "@/interface/home";
 
 const VALID_ICONS = new Set<TrustIconName>([
   "shield",
@@ -17,16 +21,13 @@ const VALID_ICONS = new Set<TrustIconName>([
 
 export function isSafeLinkHref(href: string): boolean {
   const trimmed = href.trim();
-  if (!trimmed) return false;
+  if (!trimmed || trimmed.length > 300) return false;
   if (trimmed.startsWith("/") && !trimmed.startsWith("//")) return true;
   return isSafeHttpUrl(trimmed);
 }
 
 export function isSafeImageSrc(src: string): boolean {
-  const trimmed = src.trim();
-  if (!trimmed) return false;
-  if (trimmed.startsWith("/") && !trimmed.startsWith("//")) return true;
-  return isSafeHttpUrl(trimmed);
+  return isSafeLocalImageUrl(src);
 }
 
 export function validateHighlightInput(
@@ -67,7 +68,7 @@ export function validateHighlightInput(
   if (!isSafeLinkHref(ctaHref)) {
     return {
       ok: false,
-      error: "Link CTA harus diawali dengan / atau http(s)://",
+      error: "Link CTA harus diawali dengan / atau https://",
     };
   }
 
@@ -75,7 +76,7 @@ export function validateHighlightInput(
   if (!isSafeImageSrc(resolvedImage)) {
     return {
       ok: false,
-      error: "Path gambar harus diawali dengan / atau http(s)://",
+      error: "Path gambar sorotan harus dari folder lokal /images/... atau /uploads/...",
     };
   }
 
@@ -164,13 +165,13 @@ export function validateHomeSettingsInput(
   if (!isSafeLinkHref(primaryCtaHref)) {
     return {
       ok: false,
-      error: "Link CTA utama harus diawali dengan / atau http(s)://",
+      error: "Link CTA utama harus diawali dengan / atau https://",
     };
   }
   if (!isSafeImageSrc(heroImageUrl)) {
     return {
       ok: false,
-      error: "Path gambar hero harus diawali dengan / atau http(s)://",
+      error: "Path gambar hero harus dari folder lokal /images/... atau /uploads/...",
     };
   }
 

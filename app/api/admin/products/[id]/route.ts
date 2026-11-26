@@ -1,19 +1,29 @@
 import { NextResponse } from "next/server";
 import { requireAdminApiSession } from "@/lib/server/admin-auth";
+import { logSecurityEvent } from "@/lib/server/audit-log";
 import { catalogRepository } from "@/lib/server/catalog-repository";
 import { revalidateCatalog } from "@/lib/server/catalog-service";
 import { categoryRepository } from "@/lib/server/category-repository";
+import { getClientIp } from "@/lib/server/rate-limit";
 import { validateProductInput } from "@/lib/validation/product";
 
 export async function PUT(
   request: Request,
   context: RouteContext<"/api/admin/products/[id]">
 ) {
-  const auth = await requireAdminApiSession();
+  const auth = await requireAdminApiSession({ request });
   if (auth.response) return auth.response;
 
   try {
     const { id } = await context.params;
+    const previous = await catalogRepository.findById(id);
+    if (!previous) {
+      return NextResponse.json(
+        { error: "Produk tidak ditemukan." },
+        { status: 404 }
+      );
+    }
+
     const body = await request.json();
     const categories = await categoryRepository.findAll();
     const validated = validateProductInput(
@@ -26,16 +36,31 @@ export async function PUT(
 
     const updated = await catalogRepository.update(id, validated.data);
     if (!updated) {
-      return NextResponse.json({ error: "Product not found." }, { status: 404 });
+      return NextResponse.json(
+        { error: "Produk tidak ditemukan." },
+        { status: 404 }
+      );
     }
 
     revalidateCatalog(updated.slug);
+    if (previous.slug !== updated.slug) {
+      revalidateCatalog(previous.slug);
+    }
+
+    logSecurityEvent({
+      event: "ADMIN_PRODUCT_MUTATION",
+      actor: auth.session.username,
+      ip: getClientIp(request),
+      target: updated.id,
+      detail: `action=update sku=${updated.sku}`,
+    });
+
     return NextResponse.json({ product: updated });
-  } catch {
-    return NextResponse.json(
-      { error: "Failed to update product." },
-      { status: 500 }
-    );
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : "Gagal memperbarui produk.";
+    const status = message.includes("sudah digunakan") ? 409 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }
 
@@ -43,7 +68,7 @@ export async function PATCH(
   request: Request,
   context: RouteContext<"/api/admin/products/[id]">
 ) {
-  const auth = await requireAdminApiSession();
+  const auth = await requireAdminApiSession({ request });
   if (auth.response) return auth.response;
 
   try {
@@ -51,45 +76,77 @@ export async function PATCH(
     const body = (await request.json()) as { inStock?: unknown };
     if (typeof body.inStock !== "boolean") {
       return NextResponse.json(
-        { error: "Boolean inStock field is required." },
+        { error: "Field inStock harus berupa boolean." },
         { status: 400 }
       );
     }
 
     const updated = await catalogRepository.updateStock(id, body.inStock);
     if (!updated) {
-      return NextResponse.json({ error: "Product not found." }, { status: 404 });
+      return NextResponse.json(
+        { error: "Produk tidak ditemukan." },
+        { status: 404 }
+      );
     }
 
     revalidateCatalog(updated.slug);
+
+    logSecurityEvent({
+      event: "ADMIN_PRODUCT_MUTATION",
+      actor: auth.session.username,
+      ip: getClientIp(request),
+      target: updated.id,
+      detail: `action=stock inStock=${updated.inStock}`,
+    });
+
     return NextResponse.json({ product: updated });
   } catch {
     return NextResponse.json(
-      { error: "Failed to update stock status." },
+      { error: "Gagal memperbarui status stok." },
       { status: 500 }
     );
   }
 }
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   context: RouteContext<"/api/admin/products/[id]">
 ) {
-  const auth = await requireAdminApiSession();
+  const auth = await requireAdminApiSession({ request });
   if (auth.response) return auth.response;
 
   try {
     const { id } = await context.params;
-    const deleted = await catalogRepository.delete(id);
-    if (!deleted) {
-      return NextResponse.json({ error: "Product not found." }, { status: 404 });
+    const existing = await catalogRepository.findById(id);
+    if (!existing) {
+      return NextResponse.json(
+        { error: "Produk tidak ditemukan." },
+        { status: 404 }
+      );
     }
 
-    revalidateCatalog();
+    const deleted = await catalogRepository.delete(id);
+    if (!deleted) {
+      return NextResponse.json(
+        { error: "Produk tidak ditemukan." },
+        { status: 404 }
+      );
+    }
+
+    revalidateCatalog(existing.slug);
+
+    logSecurityEvent({
+      event: "ADMIN_PRODUCT_MUTATION",
+      actor: auth.session.username,
+      ip: getClientIp(request),
+      target: id,
+      detail: `action=delete sku=${existing.sku}`,
+    });
+
     return NextResponse.json({ ok: true, id });
   } catch {
     return NextResponse.json(
-      { error: "Failed to delete product." },
+      { error: "Gagal menghapus produk." },
       { status: 500 }
     );
   }

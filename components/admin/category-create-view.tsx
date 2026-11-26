@@ -29,7 +29,7 @@ import {
 import { AdminHeader } from "@/components/admin/admin-header";
 import { useCategoryCreateForm } from "@/hooks/admin/use-category-form";
 import { cn } from "@/lib/utils";
-import type { Category } from "@/types/catalog";
+import type { Category } from "@/interface/catalog";
 
 interface CategoryCreateViewProps {
   existingCategories: Category[];

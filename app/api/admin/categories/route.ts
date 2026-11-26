@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { requireAdminApiSession } from "@/lib/server/admin-auth";
+import { logSecurityEvent } from "@/lib/server/audit-log";
 import { categoryRepository } from "@/lib/server/category-repository";
 import { revalidateCategories } from "@/lib/server/category-service";
+import { getClientIp } from "@/lib/server/rate-limit";
 import { validateCategoryInput } from "@/lib/validation/category";
 
 export async function GET() {
@@ -13,7 +15,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const auth = await requireAdminApiSession();
+  const auth = await requireAdminApiSession({ request });
   if (auth.response) return auth.response;
 
   try {
@@ -25,11 +27,20 @@ export async function POST(request: Request) {
 
     const created = await categoryRepository.create(validated.data);
     revalidateCategories();
+
+    logSecurityEvent({
+      event: "ADMIN_CATEGORY_MUTATION",
+      actor: auth.session.username,
+      ip: getClientIp(request),
+      target: created.slug,
+      detail: "action=create",
+    });
+
     return NextResponse.json({ category: created }, { status: 201 });
   } catch (err) {
     const message =
-      err instanceof Error ? err.message : "Failed to create category.";
-    const status = message.includes("already exists") ? 409 : 500;
+      err instanceof Error ? err.message : "Gagal membuat kategori baru.";
+    const status = message.includes("sudah terdaftar") ? 409 : 500;
     return NextResponse.json({ error: message }, { status });
   }
 }

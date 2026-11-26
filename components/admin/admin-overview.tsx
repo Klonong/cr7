@@ -29,8 +29,8 @@ import {
 } from "@/lib/catalog-filters";
 import { formatPrice } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import type { Category, Product } from "@/types/catalog";
-import type { HomeContent } from "@/types/home";
+import type { Category, Product } from "@/interface/catalog";
+import type { HomeContent } from "@/interface/home";
 
 interface AdminOverviewProps {
   products: Product[];

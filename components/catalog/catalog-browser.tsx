@@ -44,7 +44,7 @@ import type {
   Product,
   ProductBadge,
   SortOption,
-} from "@/types/catalog";
+} from "@/interface/catalog";
 
 const SORT_LABELS: Record<SortOption, string> = {
   featured: "Unggulan",
@@ -498,6 +498,7 @@ function CatalogBrowserInner({
               <ProductCard
                 key={product.id}
                 product={product}
+                categories={categories}
                 onQuickView={quickView.openQuickView}
               />
             ))}
@@ -529,6 +530,7 @@ function CatalogBrowserInner({
 
       <ProductQuickView
         product={quickView.quickViewProduct}
+        categories={categories}
         open={quickView.isOpen}
         onOpenChange={quickView.handleOpenChange}
       />

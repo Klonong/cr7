@@ -34,7 +34,7 @@ import { AdminHeader } from "@/components/admin/admin-header";
 import { MOTORCYCLE_TYPES } from "@/config/store";
 import { useMotorcycleForm } from "@/hooks/admin/use-motorcycle-form";
 import { cn } from "@/lib/utils";
-import type { Motorcycle, MotorcycleType } from "@/types/catalog";
+import type { Motorcycle, MotorcycleType } from "@/interface/catalog";
 
 const POPULAR_BRANDS = [
   "Yamaha",

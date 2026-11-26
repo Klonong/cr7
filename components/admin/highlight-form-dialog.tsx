@@ -16,10 +16,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { ImageDropzone } from "@/components/admin/image-dropzone";
-import { HERO_IMAGE_PRESETS } from "@/data/home-defaults";
-import { STORE_CONFIG } from "@/config/store";
+import { HERO_IMAGE_PRESETS, STORE_CONFIG } from "@/config/store";
 import { useHighlightForm } from "@/hooks/admin/use-highlight-form";
-import type { HomeHighlight } from "@/types/home";
+import type { HomeHighlight } from "@/interface/home";
 
 const QUICK_CTA_LINKS = [
   { label: "Lampu LED", href: "/products?category=led-headlights" },

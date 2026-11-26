@@ -21,7 +21,7 @@ import {
 import { useSpotlightCarousel } from "@/hooks/catalog/use-spotlight-carousel";
 import { isExternalUrl } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import type { HomeHighlight } from "@/types/home";
+import type { HomeHighlight } from "@/interface/home";
 
 interface SpotlightCarouselProps {
   highlights: HomeHighlight[];

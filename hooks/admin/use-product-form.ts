@@ -22,18 +22,11 @@ import type {
   ProductBadge,
   ProductInput,
   ProductVariant,
-} from "@/types/catalog";
+} from "@/interface/catalog";
 
-export interface VariantDraft {
-  id: string;
-  name: string;
-  sku: string;
-  price: string;
-  colorHex: string;
-  inStock: boolean;
-  shopeeUrl: string;
-  tiktokShopUrl: string;
-}
+import type { VariantDraft } from "@/interface/hooks";
+
+export type { VariantDraft };
 
 function toVariantDrafts(variants?: ProductVariant[]): VariantDraft[] {
   if (!variants || variants.length === 0) return [];

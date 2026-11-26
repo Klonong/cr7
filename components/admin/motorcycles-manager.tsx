@@ -27,7 +27,7 @@ import { AdminHeader } from "@/components/admin/admin-header";
 import { AdminFeedbackBanner } from "@/components/admin/admin-feedback-banner";
 import { useAdminMotorcycles } from "@/hooks/admin/use-admin-motorcycles";
 import { cn } from "@/lib/utils";
-import type { Motorcycle, Product } from "@/types/catalog";
+import type { Motorcycle, Product } from "@/interface/catalog";
 
 interface MotorcyclesManagerProps {
   initialMotorcycles: Motorcycle[];

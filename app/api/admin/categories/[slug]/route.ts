@@ -1,15 +1,16 @@
 import { NextResponse } from "next/server";
 import { requireAdminApiSession } from "@/lib/server/admin-auth";
-import { catalogRepository } from "@/lib/server/catalog-repository";
+import { logSecurityEvent } from "@/lib/server/audit-log";
 import { categoryRepository } from "@/lib/server/category-repository";
 import { revalidateCategories } from "@/lib/server/category-service";
+import { getClientIp } from "@/lib/server/rate-limit";
 import { validateCategoryInput } from "@/lib/validation/category";
 
 export async function PUT(
   request: Request,
   context: RouteContext<"/api/admin/categories/[slug]">
 ) {
-  const auth = await requireAdminApiSession();
+  const auth = await requireAdminApiSession({ request });
   if (auth.response) return auth.response;
 
   try {
@@ -23,37 +24,45 @@ export async function PUT(
     const updated = await categoryRepository.update(slug, validated.data);
     if (!updated) {
       return NextResponse.json(
-        { error: "Category not found." },
+        { error: "Kategori tidak ditemukan." },
         { status: 404 }
       );
     }
 
     revalidateCategories();
+
+    logSecurityEvent({
+      event: "ADMIN_CATEGORY_MUTATION",
+      actor: auth.session.username,
+      ip: getClientIp(request),
+      target: slug,
+      detail: "action=update",
+    });
+
     return NextResponse.json({ category: updated });
   } catch {
     return NextResponse.json(
-      { error: "Failed to update category." },
+      { error: "Gagal memperbarui kategori." },
       { status: 500 }
     );
   }
 }
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   context: RouteContext<"/api/admin/categories/[slug]">
 ) {
-  const auth = await requireAdminApiSession();
+  const auth = await requireAdminApiSession({ request });
   if (auth.response) return auth.response;
 
   try {
     const { slug } = await context.params;
-    const products = await catalogRepository.findAll();
-    const assignedCount = products.filter((p) => p.category === slug).length;
+    const assignedCount = await categoryRepository.countProducts(slug);
 
     if (assignedCount > 0) {
       return NextResponse.json(
         {
-          error: `Cannot delete this category because ${assignedCount} ${assignedCount === 1 ? "product is" : "products are"} still assigned to it. Reassign or remove those products first.`,
+          error: `Kategori tidak dapat dihapus karena masih dipakai oleh ${assignedCount} produk. Pindahkan atau hapus produk terlebih dahulu.`,
         },
         { status: 409 }
       );
@@ -62,17 +71,26 @@ export async function DELETE(
     const deleted = await categoryRepository.delete(slug);
     if (!deleted) {
       return NextResponse.json(
-        { error: "Category not found." },
+        { error: "Kategori tidak ditemukan." },
         { status: 404 }
       );
     }
 
     revalidateCategories();
+
+    logSecurityEvent({
+      event: "ADMIN_CATEGORY_MUTATION",
+      actor: auth.session.username,
+      ip: getClientIp(request),
+      target: slug,
+      detail: "action=delete",
+    });
+
     return NextResponse.json({ ok: true, id: slug });
-  } catch {
-    return NextResponse.json(
-      { error: "Failed to delete category." },
-      { status: 500 }
-    );
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : "Gagal menghapus kategori.";
+    const status = message.includes("masih digunakan") ? 409 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }

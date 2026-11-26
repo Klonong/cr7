@@ -1,5 +1,5 @@
 import { ApiClientError } from "@/lib/api/client";
-import type { ApiErrorResponse, UploadImageResponse } from "@/types/api";
+import type { ApiErrorResponse, UploadImageResponse } from "@/interface/api";
 
 export async function uploadAdminImage(file: File): Promise<string> {
   const formData = new FormData();

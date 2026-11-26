@@ -9,7 +9,7 @@ import {
 import { getErrorMessage } from "@/lib/api/client";
 import { slugify } from "@/lib/format";
 import { validateCategoryInput } from "@/lib/validation/category";
-import type { Category } from "@/types/catalog";
+import type { Category } from "@/interface/catalog";
 
 export function useCategoryCreateForm(existingCategories: Category[]) {
   const router = useRouter();

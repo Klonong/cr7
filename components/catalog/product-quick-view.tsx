@@ -24,16 +24,18 @@ import { MarketplaceCta } from "@/components/catalog/marketplace-cta";
 import { useProductVariant } from "@/hooks/catalog/use-product-variant";
 import { formatPrice } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import type { Product } from "@/types/catalog";
+import type { Category, Product } from "@/interface/catalog";
 
 interface ProductQuickViewProps {
   product: Product | null;
+  categories?: Category[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
 export function ProductQuickView({
   product,
+  categories,
   open,
   onOpenChange,
 }: ProductQuickViewProps) {
@@ -50,7 +52,7 @@ export function ProductQuickView({
     displaySku,
     isAvailable,
     discount,
-  } = useProductVariant(product);
+  } = useProductVariant(product, categories);
 
   if (!product || !activeImage) return null;
 

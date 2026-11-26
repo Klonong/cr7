@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { createCatalogMotorcycle } from "@/lib/api/motorcycle-api";
 import { getErrorMessage } from "@/lib/api/client";
 import { validateMotorcycleInput } from "@/lib/validation/motorcycle";
-import type { Motorcycle, MotorcycleType } from "@/types/catalog";
+import type { Motorcycle, MotorcycleType } from "@/interface/catalog";
 
 export function useMotorcycleForm(existingMotorcycles: Motorcycle[]) {
   const router = useRouter();

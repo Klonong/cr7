@@ -7,7 +7,7 @@ import {
   type UseProductFiltersOptions,
 } from "@/hooks/catalog/use-product-filters";
 import { useQuickView } from "@/hooks/catalog/use-quick-view";
-import type { CategorySlug } from "@/types/catalog";
+import type { CategorySlug } from "@/interface/catalog";
 
 export function useCatalogUrlParams() {
   const searchParams = useSearchParams();

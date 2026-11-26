@@ -58,7 +58,7 @@ import type {
   CategorySlug,
   Motorcycle,
   Product,
-} from "@/types/catalog";
+} from "@/interface/catalog";
 
 interface AdminDashboardProps {
   initialProducts: Product[];
